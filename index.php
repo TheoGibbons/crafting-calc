@@ -357,39 +357,40 @@
                 });
                 machine.appendChild(itemOutput);
 
-                // Add rates section
+                // Add rates section for machine inputs and outputs
                 const rates = document.createElement('div');
                 rates.className = 'machine-rates';
 
-                // Replace the consume input section with inputs section
+                // Create inputs container with proper structure
                 const inputsContainer = document.createElement('div');
                 inputsContainer.className = 'inputs-container';
 
-                // Create inputs header with span and add button
+                // Create header with label and add button
                 const inputsHeader = document.createElement('div');
                 inputsHeader.className = 'inputs-header';
 
                 const inputsLabel = document.createElement('span');
                 inputsLabel.textContent = 'Inputs:';
 
-                // Add a + button to add new inputs
+                // Add button for adding new input items
                 const addButton = document.createElement('button');
                 addButton.textContent = '+';
                 addButton.className = 'add-input-button';
                 addButton.title = "Add new input";
 
+                // Assemble header components
                 inputsHeader.appendChild(inputsLabel);
                 inputsHeader.appendChild(addButton);
 
-                // Create inputs list
+                // Create container for the list of input items
                 const inputsList = document.createElement('div');
                 inputsList.className = 'inputs-list';
 
-                // Add components to the container
+                // Assemble the inputs container
                 inputsContainer.appendChild(inputsHeader);
                 inputsContainer.appendChild(inputsList);
 
-                // Add click event to the + button
+                // Set up event handler for the add button
                 addButton.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const machineId = parseInt(machine.dataset.id);
