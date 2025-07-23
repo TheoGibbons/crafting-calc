@@ -38,8 +38,14 @@ class CraftingCalculator {
         // Add event listeners
         this.setupEventListeners();
 
-        // Add a starter machine
-        this.addMachine();
+        // Auto save every 10 seconds
+        setInterval(() => { this.autosave() }, 10000);
+
+        // Restore the latest autosave if one is available
+        if(!this.tryRestoreAutosave()) {
+            // Add a starter machine
+            this.addMachine();
+        }
     }
 
     setupEventListeners() {
@@ -139,10 +145,52 @@ class CraftingCalculator {
         this.links.forEach(link => this.updateLinkPosition(link));
     }
 
+    tryRestoreAutosave() {
+        // Get saved states from localStorage
+        const savedStates = JSON.parse(localStorage.getItem('craftingCalculatorStates') || '{}');
+
+        // Find the latest autosave
+        const saves = Object.keys(savedStates);
+        if (saves.length === 0) return false;
+
+        // Sort by timestamp and get the latest one
+        saves.sort((a, b) => new Date(savedStates[b].timestamp) - new Date(savedStates[a].timestamp));
+        const latestSave = saves[0];
+
+        // Load the latest autosave
+        this.loadState(latestSave);
+
+        console.log("Restored latest save:", latestSave);
+
+        return true;
+    }
+
+    autosave() {
+        const formatDateTime = function (date) {
+            const pad = n => n.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        }
+        const autoSaveName = `autosave-${formatDateTime(new Date())}-${this.machines.length} machines`;
+
+        this.saveState(autoSaveName)
+    }
+
     // Save/Load functionality
-    saveState() {
-        // Prompt for a name for this saved state
-        const stateName = prompt('Enter a name for this saved state:');
+    saveState(stateName) {
+
+        while (!stateName) {
+            // Prompt for a name for this saved state
+            stateName = prompt('Enter a name for this saved state:');
+
+            if(stateName === null) return; // User cancelled
+
+            stateName = stateName.trim()
+            if(stateName.startsWith('autosave')) {
+                alert("Autosaves cannot be manually named. They will be created automatically every 10 seconds.");
+                stateName = null;
+            }
+        }
+
         if (!stateName || stateName.trim() === '') return;
 
         // Create a data structure to store the state
@@ -178,8 +226,32 @@ class CraftingCalculator {
         // Add this state with timestamp
         savedStates[stateName] = {
             timestamp: new Date().toISOString(),
+            name: stateName,
+            hash: this.simpleHash(state),
             data: state
         };
+
+        if (stateName.startsWith('autosave')) {
+            // Delete all old autosaves with tha same hash
+            for(const name in savedStates) {
+                if (name.startsWith('autosave-') && name !== stateName) {
+                    if (savedStates[name].hash === savedStates[stateName].hash) {
+                        delete savedStates[name];
+                    }
+                }
+            }
+
+            // Limit to 5 autosaves
+            const autosaves = Object.keys(savedStates).filter(name => name.startsWith('autosave-'));
+            if (autosaves.length > 5) {
+                // Sort by timestamp and remove oldest
+                autosaves.sort((a, b) => new Date(savedStates[b].timestamp) - new Date(savedStates[a].timestamp));
+                for (let i = 5; i < autosaves.length; i++) {
+                    delete savedStates[autosaves[i]];
+                }
+            }
+
+        }
 
         // Save back to localStorage
         localStorage.setItem('craftingCalculatorStates', JSON.stringify(savedStates));
@@ -187,7 +259,20 @@ class CraftingCalculator {
         // Update the dropdown
         this.loadSavedStatesList();
 
-        alert(`State "${stateName}" saved successfully!`);
+        if (!stateName.startsWith('autosave')) {
+            alert(`State "${stateName}" saved successfully!`);
+        }
+
+        console.log(`State "${stateName}" saved successfully!`, savedStates[stateName]);
+    }
+
+    simpleHash(obj) {
+        const str = JSON.stringify(obj);
+        let hash = 5381;
+        for (let i = 0; i < str.length; i++) {
+            hash = ((hash << 5) + hash) + str.charCodeAt(i); // hash * 33 + c
+        }
+        return hash >>> 0; // Convert to unsigned 32-bit integer
     }
 
     loadSavedStatesList() {
@@ -213,8 +298,12 @@ class CraftingCalculator {
         });
     }
 
-    loadState() {
-        const stateName = this.loadDropdown.value;
+    loadState(stateName) {
+
+        if(!stateName) {
+            stateName = this.loadDropdown.value;
+        }
+
         if (!stateName) return; // No selection made
 
         // Reset dropdown selection
@@ -230,10 +319,10 @@ class CraftingCalculator {
 
         const state = savedStates[stateName].data;
 
-        // Confirm before loading
-        if (!confirm(`Load saved state "${stateName}"? This will replace your current work.`)) {
-            return;
-        }
+        // // Confirm before loading
+        // if (!confirm(`Load saved state "${stateName}"? This will replace your current work.`)) {
+        //     return;
+        // }
 
         // Clear current state
         this.clearCanvas();
@@ -399,7 +488,7 @@ class CraftingCalculator {
         // Update machine status colors
         this.updateMachineStatus();
 
-        alert(`State "${stateName}" loaded successfully!`);
+        // alert(`State "${stateName}" loaded successfully!`);
     }
 
     clearCanvas() {

@@ -140,6 +140,7 @@ body {
 }
 
 #load-dropdown {
+    width: 170px;
     padding: 8px;
     border-radius: 4px;
     border: 1px solid #ccc;

@@ -297,6 +297,15 @@ CraftingCalculator.prototype.deleteMachine = function(machine) {
 };
 
 CraftingCalculator.prototype.updateMachineStatus = function() {
+
+    // List of all machine IDs
+    const machineIds = this.machines.map(m => m.id);
+
+    // List of generator machine IDs (machines that don't require anything to produce)
+    const generatorMachineIds = this.machines.map(
+      m => !this.links.filter(l => l.sourceId === m.id || l.targetId === m.id).length
+    );
+
     // Update all machines
     this.machines.forEach(machine => {
         // Calculate actual input rates by item type
