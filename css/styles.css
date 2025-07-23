@@ -189,7 +189,6 @@ button:hover {
     display: flex;
     align-items: center;
     flex-direction: row !important;
-    justify-content: center;
 }
 
 .output-container {
@@ -214,7 +213,6 @@ button:hover {
 .output-item-details {
     cursor: pointer;
     flex-direction: row !important;
-    justify-content: center;
 }
 
 .input-delete-button,
@@ -223,6 +221,7 @@ button:hover {
     padding: 0 5px;
     margin-left: 5px;
     cursor: pointer;
+    background: #ff8181;
 }
 
 .add-input-button,
