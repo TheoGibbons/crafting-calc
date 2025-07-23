@@ -106,6 +106,13 @@ CraftingCalculator.prototype.createInputsContainer = function(machine) {
     const inputsList = document.createElement('div');
     inputsList.className = 'inputs-list';
 
+    // If no inputs, add a placeholder message
+    const placeholder = document.createElement('div');
+    placeholder.textContent = 'No inputs configured';
+    placeholder.className = 'no-inputs-message';
+
+    inputsList.appendChild(placeholder);
+
     // Assemble the inputs container
     inputsContainer.appendChild(inputsHeader);
     inputsContainer.appendChild(inputsList);
@@ -146,6 +153,13 @@ CraftingCalculator.prototype.createOutputsContainer = function(machine) {
     // Create container for the list of output items
     const outputsList = document.createElement('div');
     outputsList.className = 'outputs-list';
+
+    // If no inputs, add a placeholder message
+    const placeholder = document.createElement('div');
+    placeholder.textContent = 'No outputs configured';
+    placeholder.className = 'no-outputs-message';
+
+    outputsList.appendChild(placeholder);
 
     // Assemble the outputs container
     outputsContainer.appendChild(outputsHeader);

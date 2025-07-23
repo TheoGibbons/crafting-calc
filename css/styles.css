@@ -11,9 +11,8 @@ body {
     overflow: hidden;
     cursor: grab;
     background: #f0f0f0;
-    background-image:
-        linear-gradient(#ccc 1px, transparent 1px),
-        linear-gradient(90deg, #ccc 1px, transparent 1px);
+    background-image: linear-gradient(#ccc 1px, transparent 1px),
+    linear-gradient(90deg, #ccc 1px, transparent 1px);
     background-size: 20px 20px;
 }
 
@@ -42,7 +41,7 @@ body {
     text-align: center;
     font-weight: bold;
     border-bottom: 1px solid #333;
-    overflow:  hidden;
+    overflow: hidden;
 }
 
 .machine-count {
@@ -59,7 +58,7 @@ body {
     justify-content: center;
     font-size: 12px;
     font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .machine-rates {
@@ -189,11 +188,20 @@ button:hover {
     display: flex;
     align-items: center;
     flex-direction: row !important;
+    font-weight: bold;
+    text-decoration: underline;
+    font-size: 13px;
 }
 
 .output-container {
     display: flex;
     flex-direction: column;
+}
+
+.output-container, .inputs-container {
+    border: 1px solid #a2a2a2;
+    padding: 5px;
+    box-sizing: border-box;
 }
 
 .output-rate {
