@@ -19,8 +19,6 @@ class CraftingCalculator {
         this.isPanning = false;
         this.startPanX = 0;
         this.startPanY = 0;
-        this.lastMouseX = 0;
-        this.lastMouseY = 0;
 
         // Machine and link tracking
         this.machines = [];
@@ -71,9 +69,6 @@ class CraftingCalculator {
     }
 
     handleDocumentMouseMove(e) {
-        this.lastMouseX = e.clientX;
-        this.lastMouseY = e.clientY;
-
         if (this.isPanning) {
             this.panX = e.clientX - this.startPanX;
             this.panY = e.clientY - this.startPanY;
