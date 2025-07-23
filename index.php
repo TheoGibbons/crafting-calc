@@ -191,6 +191,59 @@
         #arrowDefs {
             position: absolute;
         }
+
+        /* New classes to replace nth-child selectors and inline styles */
+        .inputs-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .inputs-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .output-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-rate {
+            cursor: pointer;
+        }
+
+        .input-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 3px 0;
+            flex-direction: row;
+        }
+
+        .input-item-details {
+            cursor: pointer;
+        }
+
+        .input-delete-button {
+            font-size: 12px;
+            padding: 0 5px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        .add-input-button {
+            margin-left: 5px;
+            padding: 0px 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .no-inputs-message {
+            font-style: italic;
+            color: #999;
+            font-size: 10px;
+            margin: 3px 0;
+        }
     </style>
 </head>
 <body>
@@ -306,17 +359,31 @@
 
                 // Replace the consume input section with inputs section
                 const inputsContainer = document.createElement('div');
-                inputsContainer.innerHTML = '<span>Inputs:</span><div class="inputs-list"></div>';
+                inputsContainer.className = 'inputs-container';
+
+                // Create inputs header with span and add button
+                const inputsHeader = document.createElement('div');
+                inputsHeader.className = 'inputs-header';
+
+                const inputsLabel = document.createElement('span');
+                inputsLabel.textContent = 'Inputs:';
 
                 // Add a + button to add new inputs
                 const addButton = document.createElement('button');
                 addButton.textContent = '+';
-                addButton.style.marginLeft = '5px';
-                addButton.style.padding = '0px 5px';
-                addButton.style.fontSize = '12px';
-                addButton.style.cursor = 'pointer';
+                addButton.className = 'add-input-button';
                 addButton.title = "Add new input";
-                inputsContainer.querySelector('span').appendChild(addButton);
+
+                inputsHeader.appendChild(inputsLabel);
+                inputsHeader.appendChild(addButton);
+
+                // Create inputs list
+                const inputsList = document.createElement('div');
+                inputsList.className = 'inputs-list';
+
+                // Add components to the container
+                inputsContainer.appendChild(inputsHeader);
+                inputsContainer.appendChild(inputsList);
 
                 // Add click event to the + button
                 addButton.addEventListener('click', (e) => {
@@ -329,17 +396,26 @@
                 rates.appendChild(inputsContainer);
 
                 const output = document.createElement('div');
-                output.innerHTML = '<span>Output:</span><span>0/min</span>';
-                // Make output rate clickable
-                const outputRate = output.querySelector('span:nth-child(2)');
+                output.className = 'output-container';
+
+                const outputLabel = document.createElement('span');
+                outputLabel.textContent = 'Output:';
+
+                const outputRate = document.createElement('span');
+                outputRate.className = 'output-rate';
+                outputRate.textContent = '0/min';
                 outputRate.title = "Click to set output rate";
-                outputRate.style.cursor = 'pointer';
+
+                // Add click event to output rate
                 outputRate.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const machineId = parseInt(machine.dataset.id);
                     const machineObj = machines.find(m => m.id === machineId);
                     setOutputRate(machineObj);
                 });
+
+                output.appendChild(outputLabel);
+                output.appendChild(outputRate);
                 rates.appendChild(output);
 
                 machine.appendChild(rates);
@@ -610,16 +686,12 @@
                 if (Object.keys(machine.inputItems).length > 0) {
                     for (const [item, rate] of Object.entries(machine.inputItems)) {
                         const itemElement = document.createElement('div');
-                        itemElement.style.display = 'flex';
-                        itemElement.style.justifyContent = 'space-between';
-                        itemElement.style.alignItems = 'center';
-                        itemElement.style.margin = '3px 0';
-                        itemElement.style.flexDirection = 'row';
+                        itemElement.className = 'input-item-row';
 
                         // Input item details (clickable to edit)
                         const itemDetails = document.createElement('div');
                         itemDetails.textContent = `${item}: ${rate}/min`;
-                        itemDetails.style.cursor = 'pointer';
+                        itemDetails.className = 'input-item-details';
                         itemDetails.title = "Click to edit this input";
                         itemDetails.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -629,10 +701,7 @@
                         // Delete button
                         const deleteButton = document.createElement('button');
                         deleteButton.textContent = '×';
-                        deleteButton.style.fontSize = '12px';
-                        deleteButton.style.padding = '0 5px';
-                        deleteButton.style.marginLeft = '5px';
-                        deleteButton.style.cursor = 'pointer';
+                        deleteButton.className = 'input-delete-button';
                         deleteButton.title = "Delete this input";
                         deleteButton.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -647,10 +716,7 @@
                     // If no inputs, add a placeholder message
                     const placeholder = document.createElement('div');
                     placeholder.textContent = 'No inputs configured';
-                    placeholder.style.fontStyle = 'italic';
-                    placeholder.style.color = '#999';
-                    placeholder.style.fontSize = '10px';
-                    placeholder.style.margin = '3px 0';
+                    placeholder.className = 'no-inputs-message';
                     inputsList.appendChild(placeholder);
                 }
             }
