@@ -228,7 +228,7 @@ button:hover {
 .add-input-button,
 .add-output-button {
     margin-left: 5px;
-    padding: 0px 5px;
+    padding: 0 5px;
     font-size: 12px;
     cursor: pointer;
 }
