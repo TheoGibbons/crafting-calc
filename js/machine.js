@@ -216,8 +216,6 @@ CraftingCalculator.prototype.handleMachineContextMenu = function(e, machineEleme
     // Add menu items
     const menuItems = [
         { text: 'Add Link', action: () => this.startLinkCreation(machine) },
-        { text: 'Add Input Item', action: () => this.addInputItem(machine) },
-        { text: 'Add Output Item', action: () => this.addOutputItem(machine) },
         { text: 'Delete', action: () => this.deleteMachine(machine) }
     ];
 

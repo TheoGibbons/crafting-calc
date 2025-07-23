@@ -127,7 +127,6 @@ CraftingCalculator.prototype.handleLinkContextMenu = function(e, link) {
     // Add menu items
     const menuItems = [
         { text: 'Set Item', action: () => this.setLinkItem(link) },
-        { text: 'Set Max Throughput Rate', action: () => this.setLinkThroughput(link) },
         { text: 'Delete Link', action: () => this.deleteLink(link) }
     ];
 
