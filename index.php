@@ -31,8 +31,8 @@
 
         .machine {
             position: absolute;
-            width: 100px;
-            height: 100px;
+            width: 200px;
+            height: 200px;
             background-color: #fff;
             border: 2px solid #333;
             border-radius: 5px;
@@ -71,16 +71,18 @@
 
         .machine-rates {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             padding: 5px;
             font-size: 12px;
             overflow: hidden;
+            gap: 10px;
         }
 
         .machine-rates div {
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
 
         .machine-item {
@@ -186,6 +188,9 @@
             font-size: 10px;
             border: 1px solid #ccc;
         }
+        #arrowDefs {
+            position: absolute;
+        }
     </style>
 </head>
 <body>
@@ -250,37 +255,91 @@
                 const machine = document.createElement('div');
                 machine.className = 'machine';
                 machine.dataset.id = id;
-                machine.style.left = `${-panX/scale + window.innerWidth/(2*scale) - 50}px`;
-                machine.style.top = `${-panY/scale + window.innerHeight/(2*scale) - 50}px`;
+                machine.style.left = `${-panX/scale + window.innerWidth/(2*scale) - 100}px`;
+                machine.style.top = `${-panY/scale + window.innerHeight/(2*scale) - 100}px`;
 
                 // Add machine header with name
                 const header = document.createElement('div');
                 header.className = 'machine-header';
                 header.textContent = name;
+                header.title = "Click to rename";
+                // Add click to rename
+                header.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const machineId = parseInt(machine.dataset.id);
+                    const machineObj = machines.find(m => m.id === machineId);
+                    renameMachine(machineObj);
+                });
                 machine.appendChild(header);
 
                 // Add machine count badge (default 1)
                 const countBadge = document.createElement('div');
                 countBadge.className = 'machine-count';
                 countBadge.textContent = '1';
+                countBadge.title = "Click to change machine count";
+                // Add click to set count
+                countBadge.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const machineId = parseInt(machine.dataset.id);
+                    const machineObj = machines.find(m => m.id === machineId);
+                    setMachineCount(machineObj);
+                });
                 machine.appendChild(countBadge);
 
                 // Add item output field
                 const itemOutput = document.createElement('div');
                 itemOutput.className = 'machine-item';
                 itemOutput.textContent = 'Produces: ?';
+                itemOutput.title = "Click to set output item";
+                // Add click to set output item
+                itemOutput.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const machineId = parseInt(machine.dataset.id);
+                    const machineObj = machines.find(m => m.id === machineId);
+                    setOutputItem(machineObj);
+                });
                 machine.appendChild(itemOutput);
 
                 // Add rates section
                 const rates = document.createElement('div');
                 rates.className = 'machine-rates';
 
-                const input = document.createElement('div');
-                input.innerHTML = '<span>Max Consumption:</span><span>0/min</span>';
-                rates.appendChild(input);
+                // Replace the consume input section with inputs section
+                const inputsContainer = document.createElement('div');
+                inputsContainer.innerHTML = '<span>Inputs:</span><div class="inputs-list"></div>';
+
+                // Add a + button to add new inputs
+                const addButton = document.createElement('button');
+                addButton.textContent = '+';
+                addButton.style.marginLeft = '5px';
+                addButton.style.padding = '0px 5px';
+                addButton.style.fontSize = '12px';
+                addButton.style.cursor = 'pointer';
+                addButton.title = "Add new input";
+                inputsContainer.querySelector('span').appendChild(addButton);
+
+                // Add click event to the + button
+                addButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const machineId = parseInt(machine.dataset.id);
+                    const machineObj = machines.find(m => m.id === machineId);
+                    addInputItem(machineObj);
+                });
+
+                rates.appendChild(inputsContainer);
 
                 const output = document.createElement('div');
                 output.innerHTML = '<span>Output:</span><span>0/min</span>';
+                // Make output rate clickable
+                const outputRate = output.querySelector('span:nth-child(2)');
+                outputRate.title = "Click to set output rate";
+                outputRate.style.cursor = 'pointer';
+                outputRate.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const machineId = parseInt(machine.dataset.id);
+                    const machineObj = machines.find(m => m.id === machineId);
+                    setOutputRate(machineObj);
+                });
                 rates.appendChild(output);
 
                 machine.appendChild(rates);
@@ -365,13 +424,8 @@
 
                 // Add menu items
                 const menuItems = [
-                    { text: 'Rename', action: () => renameMachine(machine) },
-                    { text: 'Set Machine Count', action: () => setMachineCount(machine) },
                     { text: 'Add Link', action: () => startLinkCreation(machine) },
-                    { text: 'Set Output Item', action: () => setOutputItem(machine) },
-                    { text: 'Set Output Rate', action: () => setOutputRate(machine) },
-                    { text: 'Set Input Item', action: () => setInputItem(machine) },
-                    { text: 'Set Max Consumption Rate', action: () => setInputRate(machine) },
+                    { text: 'Add Input Item', action: () => addInputItem(machine) },
                     { text: 'Delete', action: () => deleteMachine(machine) }
                 ];
 
@@ -508,6 +562,146 @@
                 }
             }
 
+            // Add input item (allows multiple inputs)
+            function addInputItem(machine) {
+                const itemName = prompt('Enter input item name:');
+
+                if (itemName !== null && itemName.trim() !== '') {
+                    const itemRate = prompt(`Enter consumption rate for ${itemName} (items/min):`);
+                    const rate = parseFloat(itemRate);
+
+                    if (!isNaN(rate) && rate > 0) {
+                        // Store item and rate in machine's inputItems
+                        machine.inputItems[itemName.trim()] = rate;
+
+                        // Update total input rate
+                        machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
+
+                        // Update the machine to show the input items
+                        updateMachineInputItemsDisplay(machine);
+
+                        // Update rate display
+                        // const rateDisplay = machine.element.querySelector('.machine-rates div:nth-child(1) span:nth-child(2)');
+                        // const totalRate = (machine.inputRate * machine.count).toFixed(1);
+                        // rateDisplay.textContent = `${totalRate}/min`;
+
+                        updateMachineStatus();
+                    }
+                }
+            }
+
+            // Update the machine to display all input items
+            function updateMachineInputItemsDisplay(machine) {
+                // Look for the inputs list container in the machine-rates section
+                let inputsList = machine.element.querySelector('.inputs-list');
+
+                if (!inputsList) {
+                    // This shouldn't happen with the new structure, but create it if missing
+                    const inputsContainer = machine.element.querySelector('.machine-rates div:first-child');
+                    inputsList = document.createElement('div');
+                    inputsList.className = 'inputs-list';
+                    inputsContainer.appendChild(inputsList);
+                }
+
+                // Clear existing inputs
+                inputsList.innerHTML = '';
+
+                // Add each input item (always displayed, even if empty)
+                if (Object.keys(machine.inputItems).length > 0) {
+                    for (const [item, rate] of Object.entries(machine.inputItems)) {
+                        const itemElement = document.createElement('div');
+                        itemElement.style.display = 'flex';
+                        itemElement.style.justifyContent = 'space-between';
+                        itemElement.style.alignItems = 'center';
+                        itemElement.style.margin = '3px 0';
+                        itemElement.style.flexDirection = 'row';
+
+                        // Input item details (clickable to edit)
+                        const itemDetails = document.createElement('div');
+                        itemDetails.textContent = `${item}: ${rate}/min`;
+                        itemDetails.style.cursor = 'pointer';
+                        itemDetails.title = "Click to edit this input";
+                        itemDetails.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            editInputItem(machine, item);
+                        });
+
+                        // Delete button
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = '×';
+                        deleteButton.style.fontSize = '12px';
+                        deleteButton.style.padding = '0 5px';
+                        deleteButton.style.marginLeft = '5px';
+                        deleteButton.style.cursor = 'pointer';
+                        deleteButton.title = "Delete this input";
+                        deleteButton.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteInputItem(machine, item);
+                        });
+
+                        itemElement.appendChild(itemDetails);
+                        itemElement.appendChild(deleteButton);
+                        inputsList.appendChild(itemElement);
+                    }
+                } else {
+                    // If no inputs, add a placeholder message
+                    const placeholder = document.createElement('div');
+                    placeholder.textContent = 'No inputs configured';
+                    placeholder.style.fontStyle = 'italic';
+                    placeholder.style.color = '#999';
+                    placeholder.style.fontSize = '10px';
+                    placeholder.style.margin = '3px 0';
+                    inputsList.appendChild(placeholder);
+                }
+            }
+
+            // Edit an existing input item
+            function editInputItem(machine, itemName) {
+                const currentRate = machine.inputItems[itemName];
+
+                // Ask for new name
+                const newName = prompt(`Edit input item name:`, itemName);
+                if (newName === null) return; // User cancelled
+
+                // Ask for new rate
+                const rateInput = prompt(`Enter consumption rate for ${newName} (items/min):`, currentRate);
+                const newRate = parseFloat(rateInput);
+
+                if (isNaN(newRate) || newRate <= 0) {
+                    alert('Please enter a valid positive number for the rate');
+                    return;
+                }
+
+                // If the name changed, delete the old entry and add a new one
+                if (newName.trim() !== itemName) {
+                    delete machine.inputItems[itemName];
+                }
+
+                // Update with new values
+                machine.inputItems[newName.trim()] = newRate;
+
+                // Update total input rate
+                machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
+
+                // Update the display
+                updateMachineInputItemsDisplay(machine);
+                updateMachineStatus();
+            }
+
+            // Delete an input item
+            function deleteInputItem(machine, itemName) {
+                if (confirm(`Delete input item "${itemName}"?`)) {
+                    delete machine.inputItems[itemName];
+
+                    // Update total input rate
+                    machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
+
+                    // Update the display
+                    updateMachineInputItemsDisplay(machine);
+                    updateMachineStatus();
+                }
+            }
+
             // Start creating a link from a machine
             function startLinkCreation(machine) {
                 activeLinkStart = machine;
@@ -574,6 +768,17 @@
                 const label = document.createElement('div');
                 label.classList.add('throughput-label');
                 label.textContent = '? items/min';
+                label.title = "Click to set throughput rate";
+                label.style.cursor = 'pointer';
+
+                // Add click event to set throughput
+                label.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const linkObj = links.find(l => l.label === label);
+                    if (linkObj) {
+                        setLinkThroughput(linkObj);
+                    }
+                });
 
                 linkGroup.appendChild(line);
                 linkGroup.appendChild(hitbox);
@@ -651,7 +856,7 @@
 
                 // Adjust start and end points to be at the edge of squares, not centers
                 // This makes arrows point to the edge of machines
-                const margin = 50; // Half the width/height of machine
+                const margin = 100; // Half the width/height of machine (updated to 100 from 50 for bigger machines)
                 const startX = sourceX + ndx * margin;
                 const startY = sourceY + ndy * margin;
                 const endX = targetX - ndx * margin;
@@ -855,13 +1060,10 @@
                     }
 
                     // Update rate displays to show total rates including machine count
-                    const inputRateDisplay = machine.element.querySelector('.machine-rates div:nth-child(1) span:nth-child(2)');
                     const outputRateDisplay = machine.element.querySelector('.machine-rates div:nth-child(2) span:nth-child(2)');
 
-                    const totalInputRate = (machine.inputRate * machine.count).toFixed(1);
                     const totalOutputRate = (machine.outputRate * machine.count).toFixed(1);
 
-                    inputRateDisplay.textContent = `${totalInputRate}/min`;
                     outputRateDisplay.textContent = `${totalOutputRate}/min`;
                 });
 
