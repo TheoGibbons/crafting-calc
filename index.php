@@ -649,20 +649,6 @@
                 }
             }
 
-            // Set output item
-            function setOutputItem(machine) {
-                const input = prompt('Enter output item name:', machine.outputItem || '');
-                if (input !== null && input.trim() !== '') {
-                    machine.outputItem = input.trim();
-
-                    // Update item display
-                    const itemOutput = machine.element.querySelector('.machine-item');
-                    itemOutput.textContent = `Produces: ${machine.outputItem}`;
-
-                    updateMachineStatus();
-                }
-            }
-
             // Add input item (allows multiple inputs)
             function addInputItem(machine) {
                 const itemName = prompt('Enter input item name:');
@@ -1234,23 +1220,6 @@
                 }
 
                 updateMachineStatus();
-            }
-
-            // Set output rate for a machine
-            function setOutputRate(machine) {
-                const input = prompt('Enter output rate per machine (items/min):', machine.outputRate);
-                const rate = parseFloat(input);
-
-                if (!isNaN(rate) && rate >= 0) {
-                    machine.outputRate = rate;
-
-                    // Update rate display
-                    const rateDisplay = machine.element.querySelector('.machine-rates .output-rate');
-                    const totalRate = (rate * machine.count).toFixed(1);
-                    rateDisplay.textContent = `${totalRate}/min`;
-
-                    updateMachineStatus();
-                }
             }
 
             // Delete a machine
