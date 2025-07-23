@@ -172,6 +172,13 @@ CraftingCalculator.prototype.addOutputItem = function(machine) {
             // Update total output rate
             machine.outputRate = Object.values(machine.outputItems).reduce((sum, rate) => sum + rate, 0);
 
+            // Update all links outputting from this machine with this item if they aren't already carrying something
+            for (const link of this.links) {
+                if (link.source.id === machine.id && !link.item) {
+                    link.item = itemName.trim();
+                }
+            }
+
             // Update the machine to show the output items
             this.updateMachineOutputItemsDisplay(machine);
 
@@ -272,6 +279,13 @@ CraftingCalculator.prototype.editOutputItemName = function(machine, itemName) {
     if (newName.trim() !== itemName) {
         delete machine.outputItems[itemName];
         machine.outputItems[newName.trim()] = currentRate;
+
+        // Update all links outputting from this machine with this item if they aren't already carrying something or where already carrying this item
+        for (const link of this.links) {
+            if (link.source.id === machine.id && (link.item === itemName || !link.item)) {
+                link.item = newName.trim();
+            }
+        }
 
         // Update the display
         this.updateMachineOutputItemsDisplay(machine);
