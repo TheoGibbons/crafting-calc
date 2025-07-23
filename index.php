@@ -201,6 +201,8 @@
         .inputs-header {
             display: flex;
             align-items: center;
+            flex-direction: row !important;
+            justify-content: center;
         }
 
         .output-container {
@@ -222,6 +224,8 @@
 
         .input-item-details {
             cursor: pointer;
+            flex-direction: row !important;
+            justify-content: center;
         }
 
         .input-delete-button {
@@ -614,30 +618,6 @@
                 }
             }
 
-            // Set input item and rate
-            function setInputItem(machine) {
-                const itemName = prompt('Enter input item name:');
-
-                if (itemName !== null && itemName.trim() !== '') {
-                    const itemRate = prompt(`Enter consumption rate for ${itemName} (items/min):`);
-                    const rate = parseFloat(itemRate);
-
-                    if (!isNaN(rate) && rate > 0) {
-                        // Store item and rate in machine's inputItems
-                        machine.inputItems[itemName.trim()] = rate;
-
-                        // Update total input rate
-                        machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
-
-                        // Update rate display
-                        const rateDisplay = machine.element.querySelector('.machine-rates div:nth-child(1) span:nth-child(2)');
-                        rateDisplay.textContent = `${machine.inputRate}/min`;
-
-                        updateMachineStatus();
-                    }
-                }
-            }
-
             // Add input item (allows multiple inputs)
             function addInputItem(machine) {
                 const itemName = prompt('Enter input item name:');
@@ -688,28 +668,53 @@
                         const itemElement = document.createElement('div');
                         itemElement.className = 'input-item-row';
 
-                        // Input item details (clickable to edit)
+                        // Input item details (split into separate name and rate elements)
                         const itemDetails = document.createElement('div');
-                        itemDetails.textContent = `${item}: ${rate}/min`;
                         itemDetails.className = 'input-item-details';
-                        itemDetails.title = "Click to edit this input";
-                        itemDetails.addEventListener('click', (e) => {
+
+                        // Input name (clickable to edit name only)
+                        const itemName = document.createElement('span');
+                        itemName.textContent = item;
+                        itemName.className = 'input-item-name';
+                        itemName.title = "Click to edit input name";
+                        itemName.style.cursor = 'pointer';
+                        itemName.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            editInputItem(machine, item);
+                            editInputItemName(machine, item);
                         });
 
-                        // Delete button
-                        const deleteButton = document.createElement('button');
-                        deleteButton.textContent = '×';
-                        deleteButton.className = 'input-delete-button';
-                        deleteButton.title = "Delete this input";
-                        deleteButton.addEventListener('click', (e) => {
+                        // Separator
+                        const separator = document.createElement('span');
+                        separator.textContent = ': ';
+
+                        // Input rate (clickable to edit rate only)
+                        const itemRate = document.createElement('span');
+                        itemRate.textContent = `${rate}/min`;
+                        itemRate.className = 'input-item-rate';
+                        itemRate.title = "Click to edit input rate";
+                        itemRate.style.cursor = 'pointer';
+                        itemRate.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            deleteInputItem(machine, item);
+                            editInputItemRate(machine, item);
                         });
+
+                      // Delete button
+                      const deleteButton = document.createElement('button');
+                      deleteButton.textContent = '×';
+                      deleteButton.className = 'input-delete-button';
+                      deleteButton.title = "Delete this input";
+                      deleteButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteInputItem(machine, item);
+                      });
+
+                        // Assemble the item details
+                        itemDetails.appendChild(itemName);
+                        itemDetails.appendChild(separator);
+                        itemDetails.appendChild(itemRate);
+                        itemDetails.appendChild(deleteButton);
 
                         itemElement.appendChild(itemDetails);
-                        itemElement.appendChild(deleteButton);
                         inputsList.appendChild(itemElement);
                     }
                 } else {
@@ -745,6 +750,52 @@
 
                 // Update with new values
                 machine.inputItems[newName.trim()] = newRate;
+
+                // Update total input rate
+                machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
+
+                // Update the display
+                updateMachineInputItemsDisplay(machine);
+                updateMachineStatus();
+            }
+
+            // Edit an input item name only
+            function editInputItemName(machine, itemName) {
+                const currentRate = machine.inputItems[itemName];
+
+                // Ask for new name
+                const newName = prompt(`Edit input item name:`, itemName);
+
+                // Return if canceled or empty
+                if (newName === null || newName.trim() === '') return;
+
+                // If the name changed, delete the old entry and add a new one with the same rate
+                if (newName.trim() !== itemName) {
+                    delete machine.inputItems[itemName];
+                    machine.inputItems[newName.trim()] = currentRate;
+
+                    // Update the display
+                    updateMachineInputItemsDisplay(machine);
+                    updateMachineStatus();
+                }
+            }
+
+            // Edit an input item rate only
+            function editInputItemRate(machine, itemName) {
+                const currentRate = machine.inputItems[itemName];
+
+                // Ask for new rate
+                const rateInput = prompt(`Enter consumption rate for ${itemName} (items/min):`, currentRate);
+                const newRate = parseFloat(rateInput);
+
+                // Validate rate
+                if (isNaN(newRate) || newRate <= 0) {
+                    alert('Please enter a valid positive number for the rate');
+                    return;
+                }
+
+                // Update with new rate
+                machine.inputItems[itemName] = newRate;
 
                 // Update total input rate
                 machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
@@ -966,7 +1017,7 @@
 
             // Update link label with item and throughput info
             function updateLinkLabel(link) {
-                const itemText = link.item ? `<span class="item-badge">${link.item}</span>` : '';
+                const itemText = link.item ? `<span class="item-badge">${link.item}XXX</span>` : '';
                 const rateText = `${link.throughput || '?'} items/min`;
                 link.label.innerHTML = itemText + ' ' + rateText;
             }
@@ -1019,7 +1070,7 @@
                     machine.outputRate = rate;
 
                     // Update rate display
-                    const rateDisplay = machine.element.querySelector('.machine-rates div:nth-child(2) span:nth-child(2)');
+                    const rateDisplay = machine.element.querySelector('.machine-rates .output-rate');
                     const totalRate = (rate * machine.count).toFixed(1);
                     rateDisplay.textContent = `${totalRate}/min`;
 
@@ -1126,11 +1177,11 @@
                     }
 
                     // Update rate displays to show total rates including machine count
-                    const outputRateDisplay = machine.element.querySelector('.machine-rates div:nth-child(2) span:nth-child(2)');
-
-                    const totalOutputRate = (machine.outputRate * machine.count).toFixed(1);
-
-                    outputRateDisplay.textContent = `${totalOutputRate}/min`;
+                    // const outputRateDisplay = machine.element.querySelector('.machine-rates div:nth-child(2) span:nth-child(2)');
+                    //
+                    // const totalOutputRate = (machine.outputRate * machine.count).toFixed(1);
+                    //
+                    // outputRateDisplay.textContent = `${totalOutputRate}/min`;
                 });
 
                 // Update all link labels
