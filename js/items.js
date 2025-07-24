@@ -16,7 +16,7 @@ CraftingCalculator.prototype.addInputItem = function(machine) {
             // Update the machine to show the input items
             this.updateMachineInputItemsDisplay(machine);
 
-            this.updateMachineStatus();
+            this.updateMachineStatuses();
         }
     }
 };
@@ -116,7 +116,7 @@ CraftingCalculator.prototype.editInputItemName = function(machine, itemName) {
 
         // Update the display
         this.updateMachineInputItemsDisplay(machine);
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
     }
 };
 
@@ -141,7 +141,7 @@ CraftingCalculator.prototype.editInputItemRate = function(machine, itemName) {
 
     // Update the display
     this.updateMachineInputItemsDisplay(machine);
-    this.updateMachineStatus();
+    this.updateMachineStatuses();
 };
 
 CraftingCalculator.prototype.deleteInputItem = function(machine, itemName) {
@@ -153,7 +153,7 @@ CraftingCalculator.prototype.deleteInputItem = function(machine, itemName) {
 
         // Update the display
         this.updateMachineInputItemsDisplay(machine);
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
     }
 };
 
@@ -182,7 +182,7 @@ CraftingCalculator.prototype.addOutputItem = function(machine) {
             // Update the machine to show the output items
             this.updateMachineOutputItemsDisplay(machine);
 
-            this.updateMachineStatus();
+            this.updateMachineStatuses();
         }
     }
 };
@@ -289,7 +289,7 @@ CraftingCalculator.prototype.editOutputItemName = function(machine, itemName) {
 
         // Update the display
         this.updateMachineOutputItemsDisplay(machine);
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
     }
 };
 
@@ -314,7 +314,7 @@ CraftingCalculator.prototype.editOutputItemRate = function(machine, itemName) {
 
     // Update the display
     this.updateMachineOutputItemsDisplay(machine);
-    this.updateMachineStatus();
+    this.updateMachineStatuses();
 };
 
 CraftingCalculator.prototype.deleteOutputItem = function(machine, itemName) {
@@ -326,6 +326,6 @@ CraftingCalculator.prototype.deleteOutputItem = function(machine, itemName) {
 
         // Update the display
         this.updateMachineOutputItemsDisplay(machine);
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
     }
 };

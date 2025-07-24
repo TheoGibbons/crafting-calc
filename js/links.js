@@ -58,19 +58,29 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
     hitbox.classList.add('link-hitbox');
 
     const label = document.createElement('div');
-    label.classList.add('throughput-label');
-    label.textContent = '? items/min';
-    label.title = "Click to set throughput rate";
-    label.style.cursor = 'pointer';
+    label.classList.add('link-label');
+
+    const labelText = document.createElement('div');
+    labelText.classList.add('link-text');
+    labelText.textContent = '? items/min';
+    labelText.title = "Click to set throughput rate";
+    labelText.style.cursor = 'pointer';
 
     // Add click event to set throughput
-    label.addEventListener('click', (e) => {
+    labelText.addEventListener('click', (e) => {
         e.stopPropagation();
-        const linkObj = this.links.find(l => l.label === label);
+        const linkObj = this.links.find(l => l.label === labelText);
         if (linkObj) {
             this.setLinkThroughput(linkObj);
         }
     });
+
+    const labelError = document.createElement('div');
+    labelError.classList.add('error-icon');
+    labelError.style.display = 'none';
+
+    label.appendChild(labelError);
+    label.appendChild(labelText);
 
     linkGroup.appendChild(line);
     linkGroup.appendChild(hitbox);
@@ -108,7 +118,7 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
     // Add event listener for context menu
     hitbox.addEventListener('contextmenu', (e) => this.handleLinkContextMenu(e, link));
 
-    this.updateMachineStatus();
+    this.updateMachineStatuses();
 };
 
 CraftingCalculator.prototype.handleLinkContextMenu = function(e, link) {
@@ -154,7 +164,7 @@ CraftingCalculator.prototype.setLinkItem = function(link) {
     if (input !== null) {
         link.item = input.trim();
         this.updateLinkLabel(link);
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
     }
 };
 
@@ -217,14 +227,12 @@ CraftingCalculator.prototype.updateLinkPosition = function(link) {
     link.label.style.position = 'absolute';
     link.label.style.left = `${midX}px`;
     link.label.style.top = `${midY}px`;
-    link.label.style.transform = 'translate(-50%, -50%)';
-    link.label.style.zIndex = '10'; // Ensure label is above the link line
 };
 
 CraftingCalculator.prototype.updateLinkLabel = function(link) {
     const itemText = link.item ? `<span class="item-badge">${link.item}</span>` : '';
     const rateText = `${link.throughput || '?'} items/min`;
-    link.label.innerHTML = itemText + ' ' + rateText;
+    link.label.querySelector('.link-text').innerHTML = itemText + ' ' + rateText;
 };
 
 CraftingCalculator.prototype.setLinkThroughput = function(link) {
@@ -234,7 +242,7 @@ CraftingCalculator.prototype.setLinkThroughput = function(link) {
     if (!isNaN(rate) && rate >= 0) {
         link.throughput = rate;
         this.updateLinkLabel(link);
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
     }
 };
 
@@ -261,5 +269,5 @@ CraftingCalculator.prototype.deleteLink = function(link) {
         this.links.splice(linkIdx, 1);
     }
 
-    this.updateMachineStatus();
+    this.updateMachineStatuses();
 };

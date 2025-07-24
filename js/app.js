@@ -166,6 +166,8 @@ class CraftingCalculator {
     }
 
     autosave() {
+        if(this.machines.length === 0) return;
+
         const formatDateTime = function (date) {
             const pad = n => n.toString().padStart(2, '0');
             return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
@@ -438,19 +440,31 @@ class CraftingCalculator {
             const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             hitbox.classList.add('link-hitbox');
 
+
             const label = document.createElement('div');
-            label.classList.add('throughput-label');
-            label.title = "Click to set throughput rate";
-            label.style.cursor = 'pointer';
+            label.classList.add('link-label');
+
+            const labelText = document.createElement('div');
+            labelText.classList.add('link-text');
+            labelText.textContent = '? items/min';
+            labelText.title = "Click to set throughput rate";
+            labelText.style.cursor = 'pointer';
 
             // Add click event to set throughput
-            label.addEventListener('click', (e) => {
+            labelText.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const linkObj = this.links.find(l => l.label === label);
+                const linkObj = this.links.find(l => l.label === labelText);
                 if (linkObj) {
                     this.setLinkThroughput(linkObj);
                 }
             });
+
+            const labelError = document.createElement('div');
+            labelError.classList.add('error-icon');
+            labelError.style.display = '';
+
+            label.appendChild(labelError);
+            label.appendChild(labelText);
 
             linkGroup.appendChild(line);
             linkGroup.appendChild(hitbox);
@@ -486,7 +500,7 @@ class CraftingCalculator {
         });
 
         // Update machine status colors
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
 
         // alert(`State "${stateName}" loaded successfully!`);
     }

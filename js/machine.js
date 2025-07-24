@@ -76,7 +76,7 @@ CraftingCalculator.prototype.addMachine = function() {
     // Add context menu
     machine.addEventListener('contextmenu', (e) => this.handleMachineContextMenu(e, machine));
 
-    this.updateMachineStatus();
+    this.updateMachineStatuses();
     return machineObj;
 };
 
@@ -274,7 +274,7 @@ CraftingCalculator.prototype.setMachineCount = function(machine) {
         countBadge.style.display = count > 1 ? 'flex' : 'none';
 
         // Update effective output rate based on machine count
-        this.updateMachineStatus();
+        this.updateMachineStatuses();
     }
 };
 
@@ -296,77 +296,99 @@ CraftingCalculator.prototype.deleteMachine = function(machine) {
     }
 };
 
-CraftingCalculator.prototype.updateMachineStatus = function() {
+CraftingCalculator.prototype.updateMachineStatuses = function() {
+    return ;
 
-    // List of all machine IDs
-    const machineIds = this.machines.map(m => m.id);
+    this.resetStatesOnMachineAndLinks();
 
-    // List of generator machine IDs (machines that don't require anything to produce)
-    const generatorMachineIds = this.machines.map(
-      m => !this.links.filter(l => l.sourceId === m.id || l.targetId === m.id).length
-    );
+    if (!this.setLoopStates()) {
+        this.updateStatesOnAllMachineAndLinks();
+    }
 
-    // Update all machines
-    this.machines.forEach(machine => {
-        // Calculate actual input rates by item type
-        const itemInputRates = {};
+    this.drawMachineAndLinkStatuses();
+};
 
-        // Track for each input item
-        this.links.forEach(link => {
-            if (link.target.id === machine.id && link.item) {
-                // Source total output considering number of machines
-                const sourceOutputRate = link.source.outputRate * link.source.count;
-                const linkThroughput = link.throughput;
+CraftingCalculator.prototype.resetStatesOnMachineAndLinks = function() {
+    // Reset all machines and links to default state
+    for (const machine of this.machines) {
+        // TODO
+    }
 
-                // Use the minimum of source output rate and link throughput
-                const effectiveRate = linkThroughput > 0 ?
-                    Math.min(sourceOutputRate, linkThroughput) : sourceOutputRate;
+    for (const link of this.links) {
+        link.state = 'default';
+        link.errorMessage = '';
+    }
+};
 
-                // Add to the correct item bucket
-                if (!itemInputRates[link.item]) {
-                    itemInputRates[link.item] = 0;
+CraftingCalculator.prototype.setLoopStates = function() {
+    const linksInALoop = this.getAllLinksInALoop();
+    if (linksInALoop.length === 0) return false; // No loops found
+
+    // Set all machines and links in the loop to error state
+    for (const link of linksInALoop) {
+        link.state = 'error';
+        link.errorMessage = 'In Loop';
+    }
+
+    return true;
+};
+
+CraftingCalculator.prototype.getAllLinksInALoop = function() {
+    const visited = new Set();
+    const stack = new Set();
+    const loopLinks = [];
+
+    const visit = (machine) => {
+        if (stack.has(machine.id)) {
+            // Found a loop, collect all links in the loop
+            for (const link of this.links) {
+                if (link.source.id === machine.id || link.target.id === machine.id) {
+                    loopLinks.push(link);
                 }
-                itemInputRates[link.item] += effectiveRate;
             }
-        });
+            return true; // Loop found
+        }
+        if (visited.has(machine.id)) return false; // Already processed
 
-        // Determine status based on item requirements
-        let worstRatio = 1; // Start with "sufficient" and find the worst case
+        visited.add(machine.id);
+        stack.add(machine.id);
 
-        for (const [item, requiredRate] of Object.entries(machine.inputItems)) {
-            const totalRequiredRate = requiredRate * machine.count;
-            const actualRate = itemInputRates[item] || 0;
-
-            if (totalRequiredRate > 0) {
-                const ratio = actualRate / totalRequiredRate;
-                worstRatio = Math.min(worstRatio, ratio);
+        // Check all links from this machine
+        for (const link of this.links) {
+            if (link.source.id === machine.id) {
+                if (visit(link.target)) return true; // Loop found in recursion
             }
         }
 
-        // Set status based on the worst ratio
-        let status = '';
+        stack.delete(machine.id);
+        return false; // No loop found from this path
+    };
 
-        if (Object.keys(machine.inputItems).length > 0) {
-            if (worstRatio >= 1) {
-                status = 'status-green'; // Sufficient input
-            } else if (worstRatio >= 0.8) {
-                status = 'status-yellow'; // Slightly insufficient (80-99%)
-            } else if (worstRatio >= 0.5) {
-                status = 'status-orange'; // Moderately insufficient (50-79%)
-            } else {
-                status = 'status-red'; // Severely insufficient (<50%)
-            }
+    // Check each machine
+    for (const machine of this.machines) {
+        if (!visited.has(machine.id)) {
+            visit(machine); // Start visiting from this machine
         }
+    }
 
-        // Remove all status classes
-        machine.element.classList.remove('status-green', 'status-yellow', 'status-orange', 'status-red');
+    return loopLinks; // Return all links that are part of any detected loop
+};
 
-        // Add appropriate status class
-        if (status) {
-            machine.element.classList.add(status);
+CraftingCalculator.prototype.drawMachineAndLinkStatuses = function() {
+
+    // // List of all machine IDs
+    // const machineIds = this.machines.map(m => m.id);
+    //
+    // // List of generator machine IDs (machines that don't require anything to produce)
+    // const generatorMachines = this.machines.filter(
+    //   m => !this.links.filter(l => l.item && l.targetId === m.id).length
+    // );
+
+    this.links.forEach(link => {
+        if( link.state === 'error') {
+            const errorElement = link.element.querySelector('.error');
+            errorElement.style.display = '';
+            errorElement.title = link.errorMessage;
         }
-    });
-
-    // Update all link labels
-    this.links.forEach(link => this.updateLinkLabel(link));
+    })
 };
