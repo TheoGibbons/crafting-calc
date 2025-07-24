@@ -297,29 +297,38 @@ CraftingCalculator.prototype.deleteMachine = function(machine) {
 };
 
 CraftingCalculator.prototype.updateMachineStatuses = function() {
+    return;
 
-    this.resetStatesOnMachineAndLinks();
+    // Reset all the state values stored in machines and links
+    this.resetThroughputsOnMachineAndLinks();
 
-    if (!this.setLoopStates()) {
-        // this.updateStatesOnAllMachineAndLinks();
+    // If there are no loops
+    if (!this.setLoopErrors()) {
+
+        // If no loops, set all machines and links current throughput's
+        this.updateMachineAndLinkErrorsAndThroughputs();
     }
 
-    this.drawMachineAndLinkStatuses();
+    this.showMachineAndLinkErrorsAndThroughputs();
 };
 
-CraftingCalculator.prototype.resetStatesOnMachineAndLinks = function() {
+CraftingCalculator.prototype.resetThroughputsOnMachineAndLinks = function() {
     // Reset all machines and links to default state
+    debugger;
     for (const machine of this.machines) {
-        // TODO
+    for (const machine of machine.machines) {
+        machine.currentThroughput = 0;
+    }
     }
 
     for (const link of this.links) {
-        link.state = 'default';
+        link.state = 'normal';
         link.errorMessage = '';
+        link.currentThroughput = 0;
     }
 };
 
-CraftingCalculator.prototype.setLoopStates = function() {
+CraftingCalculator.prototype.setLoopErrors = function() {
     const linksInALoop = this.getAllLinksInALoop();
     if (linksInALoop.length === 0) return false; // No loops found
 
@@ -367,7 +376,7 @@ CraftingCalculator.prototype.getAllLinksInALoop = function() {
     return Array.from(linksInLoop);
 };
 
-CraftingCalculator.prototype.drawMachineAndLinkStatuses = function() {
+CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function () {
 
     // // List of all machine IDs
     // const machineIds = this.machines.map(m => m.id);
@@ -384,15 +393,20 @@ CraftingCalculator.prototype.drawMachineAndLinkStatuses = function() {
         errorIcon.style.display = 'none';
         infoIcon.style.display = 'none';
 
-        if( link.state === 'error') {
+        if (link.state === 'error') {
             errorIcon.style.display = '';
             errorIcon.title = link.errorMessage;
         } else if (!link.item) {
             errorIcon.style.display = '';
             errorIcon.title = "Add item";
-        } else  {
+        } else if (!link.throughput) {
+            errorIcon.style.display = '';
+            errorIcon.title = "Add throughput rate";
+        } else {
             infoIcon.style.display = '';
-            infoIcon.title = link.errorMessage;
+            infoIcon.title = `Max throughput: ${link.throughput} items/s\n` +
+              `Current throughput: ${link.currentThroughput} items/s\n` +
+              `Efficiency: ${link.currentThroughput / link.throughput * 100}%`;
         }
     })
 };

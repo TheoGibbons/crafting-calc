@@ -276,6 +276,8 @@ CraftingCalculator.prototype.editOutputItemName = function(machine, itemName) {
         for (const link of this.links) {
             if (link.source.id === machine.id && (link.item === itemName || !link.item)) {
                 link.item = newName.trim();
+
+                this.updateLinkLabel(link);
             }
         }
 

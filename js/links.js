@@ -39,6 +39,7 @@ CraftingCalculator.prototype.startLinkCreation = function(machine) {
 };
 
 CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine) {
+
     // Check if link already exists
     const existingLink = this.links.find(link =>
         link.source === sourceMachine && link.target === targetMachine);
@@ -92,7 +93,7 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
         hitbox,
         label,
         throughput: 0,
-        item: sourceMachine.outputItem || '' // Default to source machine's output item
+        item: Object.keys(sourceMachine.outputItems)[0] || '' // Default to source machine's output item
     };
 
     this.links.push(link);
@@ -103,13 +104,9 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
     // Add target to source's outputs
     sourceMachine.outputs.push(targetMachine.id);
 
-    // If source has an output item and target has that as input item, connect them
-    if (sourceMachine.outputItem && targetMachine.inputItems[sourceMachine.outputItem]) {
-        link.item = sourceMachine.outputItem;
-    }
-
     // Position the link
     this.updateLinkPosition(link);
+    this.updateLinkLabel(link);
 
     // Add event listener for context menu
     hitbox.addEventListener('contextmenu', (e) => this.handleLinkContextMenu(e, link));
