@@ -273,10 +273,10 @@ button:hover {
     margin: 3px 0;
 }
 
-.error-icon,
-.info-icon {
-    display: block !important;
-}
+/*.error-icon,*/
+/*.info-icon {*/
+/*    display: block !important;*/
+/*}*/
 
 .error-icon {
     width: 0;

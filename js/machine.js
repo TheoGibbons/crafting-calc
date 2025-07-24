@@ -297,12 +297,11 @@ CraftingCalculator.prototype.deleteMachine = function(machine) {
 };
 
 CraftingCalculator.prototype.updateMachineStatuses = function() {
-    return ;
 
     this.resetStatesOnMachineAndLinks();
 
     if (!this.setLoopStates()) {
-        this.updateStatesOnAllMachineAndLinks();
+        // this.updateStatesOnAllMachineAndLinks();
     }
 
     this.drawMachineAndLinkStatuses();
@@ -334,44 +333,38 @@ CraftingCalculator.prototype.setLoopStates = function() {
 };
 
 CraftingCalculator.prototype.getAllLinksInALoop = function() {
-    const visited = new Set();
-    const stack = new Set();
-    const loopLinks = [];
+    const linksInLoop = new Set();
 
-    const visit = (machine) => {
-        if (stack.has(machine.id)) {
-            // Found a loop, collect all links in the loop
-            for (const link of this.links) {
-                if (link.source.id === machine.id || link.target.id === machine.id) {
-                    loopLinks.push(link);
-                }
+    // Helper: DFS from each link, tracking path
+    const dfs = (currentLink, pathLinks, visitedLinks) => {
+        if (pathLinks.includes(currentLink)) {
+            // Found a cycle, add all links in the cycle
+            const cycleStart = pathLinks.indexOf(currentLink);
+            for (let i = cycleStart; i < pathLinks.length; i++) {
+                linksInLoop.add(pathLinks[i]);
             }
-            return true; // Loop found
+            return;
         }
-        if (visited.has(machine.id)) return false; // Already processed
+        if (visitedLinks.has(currentLink)) return;
 
-        visited.add(machine.id);
-        stack.add(machine.id);
+        visitedLinks.add(currentLink);
+        pathLinks.push(currentLink);
 
-        // Check all links from this machine
-        for (const link of this.links) {
-            if (link.source.id === machine.id) {
-                if (visit(link.target)) return true; // Loop found in recursion
+        // Traverse to next links where source matches this link's target
+        this.links.forEach(nextLink => {
+            if (nextLink.source.id === currentLink.target.id) {
+                dfs(nextLink, pathLinks, visitedLinks);
             }
-        }
+        });
 
-        stack.delete(machine.id);
-        return false; // No loop found from this path
+        pathLinks.pop();
     };
 
-    // Check each machine
-    for (const machine of this.machines) {
-        if (!visited.has(machine.id)) {
-            visit(machine); // Start visiting from this machine
-        }
-    }
+    this.links.forEach(link => {
+        dfs(link, [], new Set());
+    });
 
-    return loopLinks; // Return all links that are part of any detected loop
+    return Array.from(linksInLoop);
 };
 
 CraftingCalculator.prototype.drawMachineAndLinkStatuses = function() {
@@ -385,10 +378,21 @@ CraftingCalculator.prototype.drawMachineAndLinkStatuses = function() {
     // );
 
     this.links.forEach(link => {
+        const errorIcon = link.label.querySelector('.error-icon');
+        const infoIcon = link.label.querySelector('.info-icon');
+
+        errorIcon.style.display = 'none';
+        infoIcon.style.display = 'none';
+
         if( link.state === 'error') {
-            const errorElement = link.element.querySelector('.error');
-            errorElement.style.display = '';
-            errorElement.title = link.errorMessage;
+            errorIcon.style.display = '';
+            errorIcon.title = link.errorMessage;
+        } else if (!link.item) {
+            errorIcon.style.display = '';
+            errorIcon.title = "Add item";
+        } else  {
+            infoIcon.style.display = '';
+            infoIcon.title = link.errorMessage;
         }
     })
 };

@@ -453,7 +453,7 @@ class CraftingCalculator {
             // Add click event to set throughput
             labelText.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const linkObj = this.links.find(l => l.label === labelText);
+                const linkObj = this.links.find(l => l.label.contains(labelText));
                 if (linkObj) {
                     this.setLinkThroughput(linkObj);
                 }
