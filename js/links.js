@@ -75,11 +75,7 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
         }
     });
 
-    const labelError = document.createElement('div');
-    labelError.classList.add('error-icon');
-    labelError.style.display = 'none';
-
-    label.appendChild(labelError);
+    label.appendChild(this.createIconsHolder());
     label.appendChild(labelText);
 
     linkGroup.appendChild(line);

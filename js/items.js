@@ -57,10 +57,6 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
                 this.editInputItemName(machine, item);
             });
 
-            // Separator
-            const separator = document.createElement('span');
-            separator.textContent = ': ';
-
             // Input rate (clickable to edit rate only)
             const itemRate = document.createElement('span');
             itemRate.textContent = `${rate}/min`;
@@ -83,8 +79,8 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
             });
 
             // Assemble the item details
+            itemDetails.appendChild(this.createIconsHolder());
             itemDetails.appendChild(itemName);
-            itemDetails.appendChild(separator);
             itemDetails.appendChild(itemRate);
             itemDetails.appendChild(deleteButton);
 
@@ -223,10 +219,6 @@ CraftingCalculator.prototype.updateMachineOutputItemsDisplay = function(machine)
                 this.editOutputItemName(machine, item);
             });
 
-            // Separator
-            const separator = document.createElement('span');
-            separator.textContent = ': ';
-
             // Output rate (clickable to edit rate only)
             const itemRate = document.createElement('span');
             itemRate.textContent = `${rate}/min`;
@@ -249,8 +241,8 @@ CraftingCalculator.prototype.updateMachineOutputItemsDisplay = function(machine)
             });
 
             // Assemble the item details
+            itemDetails.appendChild(this.createIconsHolder());
             itemDetails.appendChild(itemName);
-            itemDetails.appendChild(separator);
             itemDetails.appendChild(itemRate);
             itemDetails.appendChild(deleteButton);
 

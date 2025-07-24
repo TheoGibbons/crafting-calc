@@ -459,11 +459,7 @@ class CraftingCalculator {
                 }
             });
 
-            const labelError = document.createElement('div');
-            labelError.classList.add('error-icon');
-            labelError.style.display = '';
-
-            label.appendChild(labelError);
+            label.appendChild(this.createIconsHolder());
             label.appendChild(labelText);
 
             linkGroup.appendChild(line);
@@ -521,4 +517,23 @@ class CraftingCalculator {
         this.machines = [];
         this.links = [];
     }
+
+    createIconsHolder() {
+        const iconsHolder = document.createElement('div');
+        iconsHolder.classList.add('icons-holder');
+
+        const infoIcon = document.createElement('div');
+        infoIcon.classList.add('info-icon');
+        infoIcon.style.display = 'none';
+
+        const errorIcon = document.createElement('div');
+        errorIcon.classList.add('error-icon');
+        errorIcon.style.display = 'none';
+
+        iconsHolder.appendChild(infoIcon);
+        iconsHolder.appendChild(errorIcon);
+
+        return iconsHolder;
+    }
+
 }
