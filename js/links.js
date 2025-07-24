@@ -229,6 +229,22 @@ CraftingCalculator.prototype.updateLinkLabel = function(link) {
     const itemText = link.item ? `<span class="item-badge">${link.item}</span>` : '';
     const rateText = `${link.throughput || '?'} items/min`;
     link.label.querySelector('.link-text').innerHTML = itemText + ' ' + rateText;
+
+    // Add click event to the item badge if it exists
+    const itemBadge = link.label.querySelector('.item-badge');
+    if (itemBadge) {
+        itemBadge.style.cursor = 'pointer';
+        itemBadge.title = "Click to change item";
+
+        // Remove any existing click event to prevent duplicates
+        itemBadge.removeEventListener('click', this.itemBadgeClickHandler);
+
+        // Add click event to update the item
+        itemBadge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.setLinkItem(link);
+        });
+    }
 };
 
 CraftingCalculator.prototype.setLinkThroughput = function(link) {
