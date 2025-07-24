@@ -162,10 +162,10 @@ CraftingCalculator.prototype.addOutputItem = function(machine) {
 
         if (!isNaN(rate) && rate > 0) {
             // Store item and rate in machine's outputItems
-            machine.outputItems[itemName.trim()] = rate;
+            machine.outputItems[itemName.trim()] = {rate};
 
             // Update total output rate
-            machine.outputRate = Object.values(machine.outputItems).reduce((sum, rate) => sum + rate, 0);
+            machine.outputRate = Object.values(machine.outputItems).reduce((sum, outputItem) => sum + outputItem.rate, 0);
 
             // Update all links outputting from this machine with this item if they aren't already carrying something
             for (const link of this.links) {
@@ -201,7 +201,7 @@ CraftingCalculator.prototype.updateMachineOutputItemsDisplay = function(machine)
 
     // Add each output item
     if (Object.keys(machine.outputItems).length > 0) {
-        for (const [item, rate] of Object.entries(machine.outputItems)) {
+        for (const [item, outputItem] of Object.entries(machine.outputItems)) {
             const itemElement = document.createElement('div');
             itemElement.className = 'output-item-row';
 
@@ -222,7 +222,7 @@ CraftingCalculator.prototype.updateMachineOutputItemsDisplay = function(machine)
 
             // Output rate (clickable to edit rate only)
             const itemRate = document.createElement('span');
-            itemRate.textContent = `${rate}/min`;
+            itemRate.textContent = `${outputItem.rate}/min`;
             itemRate.className = 'output-item-rate';
             itemRate.title = "Click to edit output rate";
             itemRate.style.cursor = 'pointer';
@@ -260,7 +260,7 @@ CraftingCalculator.prototype.updateMachineOutputItemsDisplay = function(machine)
 };
 
 CraftingCalculator.prototype.editOutputItemName = function(machine, itemName) {
-    const currentRate = machine.outputItems[itemName];
+    const outputItem = machine.outputItems[itemName];
 
     // Ask for new name
     const newName = prompt(`Edit output item name:`, itemName);
@@ -271,7 +271,7 @@ CraftingCalculator.prototype.editOutputItemName = function(machine, itemName) {
     // If the name changed, delete the old entry and add a new one with the same rate
     if (newName.trim() !== itemName) {
         delete machine.outputItems[itemName];
-        machine.outputItems[newName.trim()] = currentRate;
+        machine.outputItems[newName.trim()] = {rate: outputItem.rate};
 
         // Update all links outputting from this machine with this item if they aren't already carrying something or where already carrying this item
         for (const link of this.links) {
@@ -289,10 +289,10 @@ CraftingCalculator.prototype.editOutputItemName = function(machine, itemName) {
 };
 
 CraftingCalculator.prototype.editOutputItemRate = function(machine, itemName) {
-    const currentRate = machine.outputItems[itemName];
+    const outputItem = machine.outputItems[itemName];
 
     // Ask for new rate
-    const rateInput = prompt(`Enter production rate for ${itemName} (items/min):`, currentRate);
+    const rateInput = prompt(`Enter production rate for ${itemName} (items/min):`, outputItem.rate);
     const newRate = parseFloat(rateInput);
 
     // Validate rate
@@ -302,10 +302,10 @@ CraftingCalculator.prototype.editOutputItemRate = function(machine, itemName) {
     }
 
     // Update with new rate
-    machine.outputItems[itemName] = newRate;
+    machine.outputItems[itemName] = {rate: newRate};
 
     // Update total output rate
-    machine.outputRate = Object.values(machine.outputItems).reduce((sum, rate) => sum + rate, 0);
+    machine.outputRate = Object.values(machine.outputItems).reduce((sum, outputItem) => sum + outputItem.rate, 0);
 
     // Update the display
     this.updateMachineOutputItemsDisplay(machine);
@@ -317,7 +317,7 @@ CraftingCalculator.prototype.deleteOutputItem = function(machine, itemName) {
         delete machine.outputItems[itemName];
 
         // Update total output rate
-        machine.outputRate = Object.values(machine.outputItems).reduce((sum, rate) => sum + rate, 0);
+        machine.outputRate = Object.values(machine.outputItems).reduce((sum, outputItem) => sum + outputItem.rate, 0);
 
         // Update the display
         this.updateMachineOutputItemsDisplay(machine);
