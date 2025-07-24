@@ -8,10 +8,9 @@ CraftingCalculator.prototype.addInputItem = function(machine) {
 
         if (!isNaN(rate) && rate > 0) {
             // Store item and rate in machine's inputItems
-            machine.inputItems[itemName.trim()] = rate;
-
-            // Update total input rate
-            machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
+            machine.inputItems[itemName.trim()] = {
+                rate,
+            };
 
             // Update the machine to show the input items
             this.updateMachineInputItemsDisplay(machine);
@@ -38,7 +37,7 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
 
     // Add each input item (always displayed, even if empty)
     if (Object.keys(machine.inputItems).length > 0) {
-        for (const [item, rate] of Object.entries(machine.inputItems)) {
+        for (const [item, inputItem] of Object.entries(machine.inputItems)) {
             const itemElement = document.createElement('div');
             itemElement.className = 'input-item-row';
 
@@ -59,7 +58,7 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
 
             // Input rate (clickable to edit rate only)
             const itemRate = document.createElement('span');
-            itemRate.textContent = `${rate}/min`;
+            itemRate.textContent = `${inputItem.rate}/min`;
             itemRate.className = 'input-item-rate';
             itemRate.title = "Click to edit input rate";
             itemRate.style.cursor = 'pointer';
@@ -97,7 +96,7 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
 };
 
 CraftingCalculator.prototype.editInputItemName = function(machine, itemName) {
-    const currentRate = machine.inputItems[itemName];
+    const currentInputItem = machine.inputItems[itemName];
 
     // Ask for new name
     const newName = prompt(`Edit input item name:`, itemName);
@@ -108,7 +107,7 @@ CraftingCalculator.prototype.editInputItemName = function(machine, itemName) {
     // If the name changed, delete the old entry and add a new one with the same rate
     if (newName.trim() !== itemName) {
         delete machine.inputItems[itemName];
-        machine.inputItems[newName.trim()] = currentRate;
+        machine.inputItems[newName.trim()] = {rate: currentInputItem.rate};
 
         // Update the display
         this.updateMachineInputItemsDisplay(machine);
@@ -117,10 +116,10 @@ CraftingCalculator.prototype.editInputItemName = function(machine, itemName) {
 };
 
 CraftingCalculator.prototype.editInputItemRate = function(machine, itemName) {
-    const currentRate = machine.inputItems[itemName];
+    const currentInputItem = machine.inputItems[itemName];
 
     // Ask for new rate
-    const rateInput = prompt(`Enter consumption rate for ${itemName} (items/min):`, currentRate);
+    const rateInput = prompt(`Enter consumption rate for ${itemName} (items/min):`, currentInputItem.rate);
     const newRate = parseFloat(rateInput);
 
     // Validate rate
@@ -130,10 +129,10 @@ CraftingCalculator.prototype.editInputItemRate = function(machine, itemName) {
     }
 
     // Update with new rate
-    machine.inputItems[itemName] = newRate;
+    machine.inputItems[itemName] = {rate: newRate};
 
     // Update total input rate
-    machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
+    machine.inputRate = Object.values(machine.inputItems).reduce((sum, inputItem) => sum + inputItem.rate, 0);
 
     // Update the display
     this.updateMachineInputItemsDisplay(machine);
@@ -145,7 +144,7 @@ CraftingCalculator.prototype.deleteInputItem = function(machine, itemName) {
         delete machine.inputItems[itemName];
 
         // Update total input rate
-        machine.inputRate = Object.values(machine.inputItems).reduce((sum, rate) => sum + rate, 0);
+        machine.inputRate = Object.values(machine.inputItems).reduce((sum, inputItem) => sum + inputItem.rate, 0);
 
         // Update the display
         this.updateMachineInputItemsDisplay(machine);
@@ -172,6 +171,8 @@ CraftingCalculator.prototype.addOutputItem = function(machine) {
             for (const link of this.links) {
                 if (link.source.id === machine.id && !link.item) {
                     link.item = itemName.trim();
+
+                    this.updateLinkLabel(link);
                 }
             }
 
