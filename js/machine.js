@@ -13,10 +13,14 @@ CraftingCalculator.prototype.addMachine = function() {
     const efficiency = document.createElement('span');
     efficiency.className = 'efficiency';
 
+    const headerName = document.createElement('span');
+    headerName.className = 'machine-header-name';
+    headerName.textContent = name;
+
     // Add machine header with name
     const header = document.createElement('div');
     header.className = 'machine-header';
-    header.textContent = name;
+    header.appendChild(headerName);
     header.appendChild(efficiency);
     header.title = "Click to rename";
 
@@ -260,14 +264,14 @@ CraftingCalculator.prototype.renameMachine = function(machine) {
     const newName = prompt('Enter new name:', machine.name);
     if (newName !== null && newName.trim() !== '') {
         machine.name = newName.trim();
-        const header = machine.element.querySelector('.machine-header');
-        header.textContent = newName.trim();
+        const headerName = machine.element.querySelector('.machine-header-name');
+        headerName.textContent = newName.trim();
     }
 };
 
 CraftingCalculator.prototype.setMachineCount = function(machine) {
     const input = prompt('Enter number of machines:', machine.count);
-    const count = parseInt(input);
+    const count = parseFloat(input);
 
     if (!isNaN(count) && count > 0) {
         machine.count = count;

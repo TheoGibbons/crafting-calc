@@ -352,10 +352,14 @@ class CraftingCalculator {
             const efficiency = document.createElement('span');
             efficiency.className = 'efficiency';
 
+            const headerName = document.createElement('span');
+            headerName.className = 'machine-header-name';
+            headerName.textContent = machineData.name;
+
             // Add machine header with name
             const header = document.createElement('div');
             header.className = 'machine-header';
-            header.textContent = machineData.name;
+            header.appendChild(headerName);
             header.appendChild(efficiency);
             header.title = "Click to rename";
 

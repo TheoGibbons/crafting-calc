@@ -111,7 +111,7 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
 
         inputLinks.forEach(link => {
             dfs(link.source);
-            returnedItems[link.item] = link.currentThroughput || 0;
+            returnedItems[link.item] = (returnedItems[link.item] ? returnedItems[link.item] : 0) + link.currentThroughput || 0;
         })
 
         return returnedItems;
@@ -130,21 +130,21 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
 
         Object.entries(machine.inputItems).forEach(([name, inputItem]) => {
             inputItem.attemptedThroughput = itemsActuallySupplied[name] || 0;
-            inputItem.efficiency = inputItem.attemptedThroughput / inputItem.rate;
+            inputItem.efficiency = inputItem.attemptedThroughput / (inputItem.rate * machine.count);
             inputItem.currentThroughput = Math.min(
-                inputItem.rate,
-                inputItem.rate * inputItem.efficiency
+                inputItem.rate * machine.count,
+                (inputItem.rate * machine.count) * inputItem.efficiency
             );
         });
 
         // Get the min ratio of rate vs throughput
         machine.efficiency =
             Object.keys(machine.inputItems).length ?
-                Math.min(...Object.values(machine.inputItems).map(inputItem => inputItem.currentThroughput / inputItem.rate)) :
+                Math.min(...Object.values(machine.inputItems).map(inputItem => inputItem.currentThroughput / (inputItem.rate * machine.count))) :
                 1.0     // There are no inputs for this machine so it can run at 100% efficiency
 
         Object.entries(machine.outputItems).forEach(([name, outputItem]) => {
-            outputItem.currentThroughput = outputItem.rate * machine.efficiency;
+            outputItem.currentThroughput = (outputItem.rate * machine.count) * machine.efficiency;
 
             // Put onto the output links
             const outputLinks = this.links.filter(l => l.source.id === machine.id && l.item === name)
@@ -206,13 +206,17 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
 
 }
 
+CraftingCalculator.prototype.percentageToColor = function (percentage) {
+    return `hsl(${percentage * 120}deg, 100%, ${percentage * (25 - 50) + 50}%)`;
+};
+
 CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function () {
 
     this.machines.forEach(m => {
         // Input items
         const efficiencyElem = m.element.querySelector('.efficiency')
         efficiencyElem.textContent = (m.efficiency * 100).toFixed(0) + '%';
-        efficiencyElem.style.color = `hsl(${m.efficiency * 120}deg, 100%, ${m.efficiency * (25 - 50) + 50}%)`;
+        efficiencyElem.style.color = this.percentageToColor(m.efficiency);
         efficiencyElem.title = `Machine running at ${(m.efficiency * 100).toFixed(0)}% capacity`;
 
         // Input items
@@ -228,6 +232,7 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
 
             errorIcon.style.display = 'none';
             infoIcon.style.display = 'none';
+            infoIcon.style.background = '';
 
             if (inputItem.state === 'error') {
                 errorIcon.style.display = '';
@@ -237,7 +242,8 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
                 errorIcon.title = "Add throughput rate";        // Impossible
             } else {
                 infoIcon.style.display = '';
-                infoIcon.title = `Max throughput: ${inputItem.rate} items/s\n` +
+                infoIcon.style.background = this.percentageToColor(inputItem.efficiency);
+                infoIcon.title = `Max throughput: ${inputItem.rate * m.count} items/s\n` +
                     `Current throughput: ${inputItem.currentThroughput} items/s\n` +
                     (inputItem.currentThroughput !== inputItem.attemptedThroughput ? `!!! Input: ${inputItem.attemptedThroughput} items/s\n` : '') +
                     `Efficiency: ${(inputItem.efficiency * 100).toFixed(0)}%`;
@@ -257,6 +263,7 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
 
             errorIcon.style.display = 'none';
             infoIcon.style.display = 'none';
+            infoIcon.style.background = '';
 
             if (outputItem.state === 'error') {
                 errorIcon.style.display = '';
@@ -266,7 +273,8 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
                 errorIcon.title = "Add throughput rate";        // Impossible
             } else {
                 infoIcon.style.display = '';
-                infoIcon.title = `Max throughput: ${outputItem.rate} items/s\n` +
+                infoIcon.style.background = this.percentageToColor(m.efficiency);
+                infoIcon.title = `Max throughput: ${outputItem.rate * m.count} items/s\n` +
                     `Current throughput: ${outputItem.currentThroughput} items/s\n` +
                     `Efficiency: ${(m.efficiency * 100).toFixed(0)}%`;
             }
@@ -279,12 +287,14 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
 
         errorIcon.style.display = 'none';
         infoIcon.style.display = 'none';
+        infoIcon.style.background = '';
 
         if (link.state === 'error') {
             errorIcon.style.display = '';
             errorIcon.title = link.errorMessages.join("\n");
         } else {
             infoIcon.style.display = '';
+            infoIcon.style.background = this.percentageToColor(link.efficiency);
             infoIcon.title = `Max throughput: ${link.throughput} items/s\n` +
                 `Current throughput: ${link.currentThroughput} items/s\n` +
                 (link.currentThroughput !== link.attemptedThroughput ? `!!! Input: ${link.attemptedThroughput} items/s\n` : '') +

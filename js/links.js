@@ -223,7 +223,7 @@ CraftingCalculator.prototype.updateLinkPosition = function(link) {
 };
 
 CraftingCalculator.prototype.updateLinkLabel = function(link) {
-    const itemText = link.item ? `<span class="item-badge">${link.item}</span>` : '';
+    const itemText = `<span class="item-badge">${link.item ? link.item : '???'}</span>`;
     const rateText = `${link.throughput || '?'} items/min`;
     link.label.querySelector('.link-text').innerHTML = itemText + ' ' + rateText;
 
