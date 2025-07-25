@@ -23,6 +23,7 @@ CraftingCalculator.prototype.resetThroughputsOnMachineAndLinks = function () {
         for (const [item, inputItem] of Object.entries(machine.inputItems)) {
             inputItem.currentThroughput = null;
             inputItem.attemptedThroughput = null;
+            inputItem.efficiency = null;
             inputItem.state = 'normal';
             inputItem.errorMessages = [];
         }
@@ -38,6 +39,7 @@ CraftingCalculator.prototype.resetThroughputsOnMachineAndLinks = function () {
         link.errorMessages = [];
         link.currentThroughput = 0;
         link.attemptedThroughput = 0;
+        link.efficiency = 0;
     }
 };
 
@@ -103,24 +105,16 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
 
     const getItemsActuallyInput = (machine) => {
 
-        // // Set all inputItem rates to 0
-        // machine.inputItems.forEach(input => {
-        //     input.currentThroughput = 0;
-        // })
-        //
+        // create a list of all input items and their actual throughputs
+        const inputLinks = this.links.filter(l => l.target.id === machine.id && l.item);
+        const returnedItems = {};
 
-        // // create a list of all input items and their actual throughputs
-        // const inputLinks = this.links.filter(l=>l.target.id === machine.id && l.item);
-        // const inputItemsAndTheirThroughputs = inputLinks.map(l => {
-        //     const linkSourceMachineOutputItems = dfs(l.source);
-        //     const linkSupply = linkSourceMachineOutputItems.filter(item => item.item === l.item);
-        //
-        //
-        // })
+        inputLinks.forEach(link => {
+            dfs(link.source);
+            returnedItems[link.item] = link.currentThroughput || 0;
+        })
 
-        return {
-            Bars: 34
-        };
+        return returnedItems;
     }
 
     // Depth-first search (DFS) to calculate throughput and errors
@@ -136,24 +130,40 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
 
         Object.entries(machine.inputItems).forEach(([name, inputItem]) => {
             inputItem.attemptedThroughput = itemsActuallySupplied[name] || 0;
+            inputItem.efficiency = inputItem.attemptedThroughput / inputItem.rate;
             inputItem.currentThroughput = Math.min(
                 inputItem.rate,
-                inputItem.attemptedThroughput
+                inputItem.rate * inputItem.efficiency
             );
         });
 
         // Get the min ratio of rate vs throughput
-        const machineEfficiency =
+        machine.efficiency =
             Object.keys(machine.inputItems).length ?
                 Math.min(...Object.values(machine.inputItems).map(inputItem => inputItem.currentThroughput / inputItem.rate)) :
                 1.0     // There are no inputs for this machine so it can run at 100% efficiency
 
         Object.entries(machine.outputItems).forEach(([name, outputItem]) => {
-            outputItem.currentThroughput = outputItem.rate * machineEfficiency;
+            outputItem.currentThroughput = outputItem.rate * machine.efficiency;
+
+            // Put onto the output links
+            const outputLinks = this.links.filter(l => l.source.id === machine.id && l.item === name)
+                .sort((a, b) => a.throughput - b.throughput);        // Sort links from slowest to fastest
+
+            let outputItemThroughputRemaining = outputItem.currentThroughput;
+            let linksVisited = 0;
+
+            outputLinks.forEach(link => {
+                link.attemptedThroughput = outputItemThroughputRemaining / (outputLinks.length - linksVisited);
+                link.currentThroughput = Math.min(link.attemptedThroughput, link.throughput);
+                link.efficiency = link.attemptedThroughput / link.throughput;
+
+                outputItemThroughputRemaining -= link.currentThroughput;
+                linksVisited++;
+            })
         })
 
         machineIdsVisited.push(machine.id)
-        return machine.outputItems
 
     }
 
@@ -229,8 +239,8 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
                 infoIcon.style.display = '';
                 infoIcon.title = `Max throughput: ${inputItem.rate} items/s\n` +
                     `Current throughput: ${inputItem.currentThroughput} items/s\n` +
-                    (inputItem.currentThroughput !== inputItem.attemptedThroughput ? `!!! Input: ${inputItem.currentThroughput} items/s\n` : '') +
-                    `Efficiency: ${(inputItem.currentThroughput / inputItem.rate * 100).toFixed(0)}%`;
+                    (inputItem.currentThroughput !== inputItem.attemptedThroughput ? `!!! Input: ${inputItem.attemptedThroughput} items/s\n` : '') +
+                    `Efficiency: ${(inputItem.efficiency * 100).toFixed(0)}%`;
             }
         })
 
@@ -258,7 +268,7 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
                 infoIcon.style.display = '';
                 infoIcon.title = `Max throughput: ${outputItem.rate} items/s\n` +
                     `Current throughput: ${outputItem.currentThroughput} items/s\n` +
-                    `Efficiency: ${(outputItem.currentThroughput / outputItem.rate * 100).toFixed(0)}%`;
+                    `Efficiency: ${(m.efficiency * 100).toFixed(0)}%`;
             }
         })
     })
@@ -277,8 +287,8 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             infoIcon.style.display = '';
             infoIcon.title = `Max throughput: ${link.throughput} items/s\n` +
                 `Current throughput: ${link.currentThroughput} items/s\n` +
-                (link.currentThroughput !== link.attemptedThroughput ? `!!! Input: ${link.currentThroughput} items/s\n` : '') +
-                `Efficiency: ${(link.currentThroughput / link.throughput * 100).toFixed(0)}%`;
+                (link.currentThroughput !== link.attemptedThroughput ? `!!! Input: ${link.attemptedThroughput} items/s\n` : '') +
+                `Efficiency: ${(link.efficiency * 100).toFixed(0)}%`;
         }
     })
 };
