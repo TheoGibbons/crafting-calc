@@ -28,11 +28,11 @@ body {
     background-color: #fff;
     border: 2px solid #333;
     border-radius: 5px;
-    cursor: pointer;
     user-select: none;
     display: flex;
     flex-direction: column;
     overflow: visible;
+    cursor: move;
 }
 
 .machine-header {
@@ -42,6 +42,7 @@ body {
     font-weight: bold;
     border-bottom: 1px solid #333;
     overflow: hidden;
+    cursor:pointer;
 }
 
 .machine-count {
@@ -59,6 +60,7 @@ body {
     font-size: 12px;
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
 }
 
 .machine-rates {
@@ -206,7 +208,10 @@ button:hover {
 .outputs-header {
     display: flex;
     align-items: center;
-    flex-direction: row !important;
+}
+
+.inputs-header span,
+.outputs-header span {
     font-weight: bold;
     text-decoration: underline;
     font-size: 13px;
@@ -239,7 +244,6 @@ button:hover {
 .input-item-details,
 .output-item-details {
     display: flex;
-    cursor: pointer;
     flex-direction: row !important;
     gap: 3px;
 }
@@ -260,9 +264,10 @@ button:hover {
 .add-input-button,
 .add-output-button {
     margin-left: 5px;
-    padding: 0 5px;
+    padding: 0 3.5px;
     font-size: 12px;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .no-inputs-message,
@@ -288,7 +293,7 @@ button:hover {
     position: relative;
     font-size: 11px;
     font-weight: 800;
-    cursor: pointer;
+    cursor: default;
 }
 
 .error-icon:hover {
@@ -309,14 +314,14 @@ button:hover {
     height: 15px;
     font-size: 11px;
     font-weight: 800;
-    cursor: pointer;
-    background: #7accff;
+    background: #cecece;
     border-radius: 50%;
     position: relative;
+    cursor: default;
 }
 
 .info-icon:hover {
-    background: #0997ef;
+    background: #777777;
 }
 
 .info-icon::after {
@@ -332,4 +337,10 @@ button:hover {
     display: flex;
     align-items: center;
     gap: 5px;
+}
+
+.efficiency {
+    font-size: 11px;
+    vertical-align: middle;
+    margin-left: 5px;
 }

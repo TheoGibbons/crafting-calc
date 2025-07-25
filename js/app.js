@@ -349,10 +349,14 @@ class CraftingCalculator {
             machine.style.left = `${machineData.left}px`;
             machine.style.top = `${machineData.top}px`;
 
+            const efficiency = document.createElement('span');
+            efficiency.className = 'efficiency';
+
             // Add machine header with name
             const header = document.createElement('div');
             header.className = 'machine-header';
             header.textContent = machineData.name;
+            header.appendChild(efficiency);
             header.title = "Click to rename";
 
             // Add click to rename
@@ -368,7 +372,7 @@ class CraftingCalculator {
             countBadge.className = 'machine-count';
             countBadge.textContent = machineData.count;
             countBadge.title = "Click to change machine count";
-            countBadge.style.display = machineData.count > 1 ? 'flex' : 'none';
+            // countBadge.style.display = machineData.count > 1 ? 'flex' : 'none';
 
             // Add click to set count
             countBadge.addEventListener('click', (e) => {

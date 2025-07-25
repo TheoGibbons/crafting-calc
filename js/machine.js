@@ -10,10 +10,14 @@ CraftingCalculator.prototype.addMachine = function() {
     machine.style.left = `${-this.panX/this.scale + window.innerWidth/(2*this.scale) - 100}px`;
     machine.style.top = `${-this.panY/this.scale + window.innerHeight/(2*this.scale) - 100}px`;
 
+    const efficiency = document.createElement('span');
+    efficiency.className = 'efficiency';
+
     // Add machine header with name
     const header = document.createElement('div');
     header.className = 'machine-header';
     header.textContent = name;
+    header.appendChild(efficiency);
     header.title = "Click to rename";
 
     // Add click to rename
@@ -281,7 +285,7 @@ CraftingCalculator.prototype.setMachineCount = function(machine) {
 CraftingCalculator.prototype.deleteMachine = function(machine) {
     // First, delete all connected links
     const connectedLinks = this.links.filter(link =>
-        link.source.id === machine.id || link.target.id === machine.id);
+      link.source.id === machine.id || link.target.id === machine.id);
 
     // Make a copy of the array to avoid modification during iteration
     [...connectedLinks].forEach(link => this.deleteLink(link));
@@ -294,119 +298,4 @@ CraftingCalculator.prototype.deleteMachine = function(machine) {
     if (machineIdx !== -1) {
         this.machines.splice(machineIdx, 1);
     }
-};
-
-CraftingCalculator.prototype.updateMachineStatuses = function() {
-    return;
-
-    // Reset all the state values stored in machines and links
-    this.resetThroughputsOnMachineAndLinks();
-
-    // If there are no loops
-    if (!this.setLoopErrors()) {
-
-        // If no loops, set all machines and links current throughput's
-        this.updateMachineAndLinkErrorsAndThroughputs();
-    }
-
-    this.showMachineAndLinkErrorsAndThroughputs();
-};
-
-CraftingCalculator.prototype.resetThroughputsOnMachineAndLinks = function() {
-    // Reset all machines and links to default state
-    debugger;
-    for (const machine of this.machines) {
-    for (const machine of machine.machines) {
-        machine.currentThroughput = 0;
-    }
-    }
-
-    for (const link of this.links) {
-        link.state = 'normal';
-        link.errorMessage = '';
-        link.currentThroughput = 0;
-    }
-};
-
-CraftingCalculator.prototype.setLoopErrors = function() {
-    const linksInALoop = this.getAllLinksInALoop();
-    if (linksInALoop.length === 0) return false; // No loops found
-
-    // Set all machines and links in the loop to error state
-    for (const link of linksInALoop) {
-        link.state = 'error';
-        link.errorMessage = 'In Loop';
-    }
-
-    return true;
-};
-
-CraftingCalculator.prototype.getAllLinksInALoop = function() {
-    const linksInLoop = new Set();
-
-    // Helper: DFS from each link, tracking path
-    const dfs = (currentLink, pathLinks, visitedLinks) => {
-        if (pathLinks.includes(currentLink)) {
-            // Found a cycle, add all links in the cycle
-            const cycleStart = pathLinks.indexOf(currentLink);
-            for (let i = cycleStart; i < pathLinks.length; i++) {
-                linksInLoop.add(pathLinks[i]);
-            }
-            return;
-        }
-        if (visitedLinks.has(currentLink)) return;
-
-        visitedLinks.add(currentLink);
-        pathLinks.push(currentLink);
-
-        // Traverse to next links where source matches this link's target
-        this.links.forEach(nextLink => {
-            if (nextLink.source.id === currentLink.target.id) {
-                dfs(nextLink, pathLinks, visitedLinks);
-            }
-        });
-
-        pathLinks.pop();
-    };
-
-    this.links.forEach(link => {
-        dfs(link, [], new Set());
-    });
-
-    return Array.from(linksInLoop);
-};
-
-CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function () {
-
-    // // List of all machine IDs
-    // const machineIds = this.machines.map(m => m.id);
-    //
-    // // List of generator machine IDs (machines that don't require anything to produce)
-    // const generatorMachines = this.machines.filter(
-    //   m => !this.links.filter(l => l.item && l.targetId === m.id).length
-    // );
-
-    this.links.forEach(link => {
-        const errorIcon = link.label.querySelector('.error-icon');
-        const infoIcon = link.label.querySelector('.info-icon');
-
-        errorIcon.style.display = 'none';
-        infoIcon.style.display = 'none';
-
-        if (link.state === 'error') {
-            errorIcon.style.display = '';
-            errorIcon.title = link.errorMessage;
-        } else if (!link.item) {
-            errorIcon.style.display = '';
-            errorIcon.title = "Add item";
-        } else if (!link.throughput) {
-            errorIcon.style.display = '';
-            errorIcon.title = "Add throughput rate";
-        } else {
-            infoIcon.style.display = '';
-            infoIcon.title = `Max throughput: ${link.throughput} items/s\n` +
-              `Current throughput: ${link.currentThroughput} items/s\n` +
-              `Efficiency: ${link.currentThroughput / link.throughput * 100}%`;
-        }
-    })
 };
