@@ -1,12 +1,11 @@
-
-CraftingCalculator.prototype.updateMachineStatuses = function() {
+CraftingCalculator.prototype.updateMachineStatuses = function () {
     // return;
 
     // Reset all the state values stored in machines and links
     this.resetThroughputsOnMachineAndLinks();
 
     // If there are no loops
-    if (!this.setLoopErrors()) {
+    if (!this.setMajorErrors()) {
 
         // If no loops, set all machines and links current throughput's
         this.updateMachineAndLinkErrorsAndThroughputs();
@@ -42,20 +41,23 @@ CraftingCalculator.prototype.resetThroughputsOnMachineAndLinks = function () {
     }
 };
 
-CraftingCalculator.prototype.setLoopErrors = function() {
+CraftingCalculator.prototype.setMajorErrors = function () {
     const linksInALoop = this.getAllLinksInALoop();
-    if (linksInALoop.length === 0) return false; // No loops found
+    if (linksInALoop.length) {
 
-    // Set all machines and links in the loop to error state
-    for (const link of linksInALoop) {
-        link.state = 'error';
-        link.errorMessages.push('In Loop');
+        // Set all machines and links in the loop to error state
+        for (const link of linksInALoop) {
+            link.state = 'error';
+            link.errorMessages.push('In Loop');
+        }
+
+        return true;
     }
 
-    return true;
+    return false;
 };
 
-CraftingCalculator.prototype.getAllLinksInALoop = function() {
+CraftingCalculator.prototype.getAllLinksInALoop = function () {
     const linksInLoop = new Set();
 
     // Helper: DFS from each link, tracking path
@@ -125,7 +127,7 @@ CraftingCalculator.prototype.updateMachineAndLinkErrorsAndThroughputs = function
     // Note the deepest node is actually the one that doesn't have any input links
     const dfs = (machine) => {
 
-        if(machineIdsVisited.indexOf(machine.id) !== -1) {
+        if (machineIdsVisited.indexOf(machine.id) !== -1) {
             return machine.outputItems
         }
 
@@ -135,16 +137,16 @@ CraftingCalculator.prototype.updateMachineAndLinkErrorsAndThroughputs = function
         Object.entries(machine.inputItems).forEach(([name, inputItem]) => {
             inputItem.attemptedThroughput = itemsActuallySupplied[name] || 0;
             inputItem.currentThroughput = Math.min(
-              inputItem.rate,
-              inputItem.attemptedThroughput
+                inputItem.rate,
+                inputItem.attemptedThroughput
             );
         });
 
         // Get the min ratio of rate vs throughput
         const machineEfficiency =
-          Object.keys(machine.inputItems).length ?
-            Math.min(...Object.values(machine.inputItems).map(inputItem => inputItem.currentThroughput / inputItem.rate)) :
-            1.0     // There are no inputs for this machine so it can run at 100% efficiency
+            Object.keys(machine.inputItems).length ?
+                Math.min(...Object.values(machine.inputItems).map(inputItem => inputItem.currentThroughput / inputItem.rate)) :
+                1.0     // There are no inputs for this machine so it can run at 100% efficiency
 
         Object.entries(machine.outputItems).forEach(([name, outputItem]) => {
             outputItem.currentThroughput = outputItem.rate * machineEfficiency;
@@ -226,9 +228,9 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             } else {
                 infoIcon.style.display = '';
                 infoIcon.title = `Max throughput: ${inputItem.rate} items/s\n` +
-                  `Current throughput: ${inputItem.currentThroughput} items/s\n` +
-                  (inputItem.currentThroughput !== inputItem.attemptedThroughput ? `!!! Input: ${inputItem.currentThroughput} items/s\n` : '') +
-                  `Efficiency: ${(inputItem.currentThroughput / inputItem.rate * 100).toFixed(0)}%`;
+                    `Current throughput: ${inputItem.currentThroughput} items/s\n` +
+                    (inputItem.currentThroughput !== inputItem.attemptedThroughput ? `!!! Input: ${inputItem.currentThroughput} items/s\n` : '') +
+                    `Efficiency: ${(inputItem.currentThroughput / inputItem.rate * 100).toFixed(0)}%`;
             }
         })
 
@@ -248,15 +250,16 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
 
             if (outputItem.state === 'error') {
                 errorIcon.style.display = '';
-                errorIcon.title = outputItem.errorMessages.join("\n");;
+                errorIcon.title = outputItem.errorMessages.join("\n");
+                ;
             } else if (outputItem.rate === null) {
                 errorIcon.style.display = '';
                 errorIcon.title = "Add throughput rate";        // Impossible
             } else {
                 infoIcon.style.display = '';
                 infoIcon.title = `Max throughput: ${outputItem.rate} items/s\n` +
-                  `Current throughput: ${outputItem.currentThroughput} items/s\n` +
-                  `Efficiency: ${(outputItem.currentThroughput / outputItem.rate * 100).toFixed(0)}%`;
+                    `Current throughput: ${outputItem.currentThroughput} items/s\n` +
+                    `Efficiency: ${(outputItem.currentThroughput / outputItem.rate * 100).toFixed(0)}%`;
             }
         })
     })
@@ -274,9 +277,9 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
         } else {
             infoIcon.style.display = '';
             infoIcon.title = `Max throughput: ${link.throughput} items/s\n` +
-              `Current throughput: ${link.currentThroughput} items/s\n` +
-              (link.currentThroughput !== link.attemptedThroughput ? `!!! Input: ${link.currentThroughput} items/s\n` : '') +
-              `Efficiency: ${(link.currentThroughput / link.throughput * 100).toFixed(0)}%`;
+                `Current throughput: ${link.currentThroughput} items/s\n` +
+                (link.currentThroughput !== link.attemptedThroughput ? `!!! Input: ${link.currentThroughput} items/s\n` : '') +
+                `Efficiency: ${(link.currentThroughput / link.throughput * 100).toFixed(0)}%`;
         }
     })
 };
