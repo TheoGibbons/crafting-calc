@@ -8,9 +8,9 @@ CraftingCalculator.prototype.updateMachineStatuses = function () {
     if (!this.setMajorErrors()) {
 
         // If no loops, set all machines and links current throughput's
-        this.updateMachineAndLinkErrorsAndThroughputs();
+        this.updateMachineThroughputs();
 
-        this.addSimpleErrors()
+        this.setSimpleErrors()
     }
 
     this.showMachineAndLinkErrorsAndThroughputs();
@@ -92,7 +92,7 @@ CraftingCalculator.prototype.getAllLinksInALoop = function () {
     return Array.from(linksInLoop);
 };
 
-CraftingCalculator.prototype.updateMachineAndLinkErrorsAndThroughputs = function () {
+CraftingCalculator.prototype.updateMachineThroughputs = function () {
 
 // debugger
 
@@ -251,7 +251,6 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             if (outputItem.state === 'error') {
                 errorIcon.style.display = '';
                 errorIcon.title = outputItem.errorMessages.join("\n");
-                ;
             } else if (outputItem.rate === null) {
                 errorIcon.style.display = '';
                 errorIcon.title = "Add throughput rate";        // Impossible
@@ -284,7 +283,7 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
     })
 };
 
-CraftingCalculator.prototype.addSimpleErrors = function () {
+CraftingCalculator.prototype.setSimpleErrors = function () {
     this.links.forEach(link => {
         if (!link.item) {
             // If there is no item set on the link
