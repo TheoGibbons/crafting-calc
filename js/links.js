@@ -171,28 +171,21 @@ CraftingCalculator.prototype.updateLinkPosition = function(link) {
     const targetX = (targetRect.left - this.panX + targetRect.width / 2) / this.scale;
     const targetY = (targetRect.top - this.panY + targetRect.height / 2) / this.scale;
 
-    // Draw a dot of the canvas at the center of the source and target machines
-    // document.querySelectorAll('.link-dot').forEach(dot => dot.remove()); // Remove existing dots
-    // const sourceDot = document.createElement('div');
-    // sourceDot.className = 'link-dot';
-    // sourceDot.style.left = `${((sourceRect.left - this.panX+sourceRect.width/2))/this.scale}px`;
-    // sourceDot.style.top = `${((sourceRect.top - this.panY+sourceRect.height/2))/this.scale}px`;
-    // sourceDot.style.width = '10px';
-    // sourceDot.style.height = '10px';
-    // sourceDot.style.backgroundColor = 'red'; // Red dot for source
-    // sourceDot.style.position = 'absolute';
-    // sourceDot.style.zIndex = '100';
-    // this.canvas.appendChild(sourceDot);
-
-
-
-
     // Calculate direction vector
     const dx = targetX - sourceX;
     const dy = targetY - sourceY;
 
-    // const angle = Math.atan2(dy, dx);
-    // console.log(angle);
+    const machineHalfWidth = 100;
+    const machineHalfHeight = 100;
+
+    // We now need to remove enough length to make the arrow point to the edge of the machines, not their centers
+    const angle = Math.atan2(dy, dx);
+    const lengthToRemove = Math.min(
+        Math.abs(machineHalfWidth / Math.cos(angle)),
+        Math.abs(machineHalfHeight / Math.cos(angle)),
+        Math.abs(machineHalfWidth / Math.sin(angle)),
+        Math.abs(machineHalfHeight / Math.sin(angle)),
+    );
 
     const length = Math.sqrt(dx*dx + dy*dy);
 
@@ -202,7 +195,7 @@ CraftingCalculator.prototype.updateLinkPosition = function(link) {
 
     // Adjust start and end points to be at the edge of squares, not centers
     // This makes arrows point to the edge of machines
-    const margin = 100; // Half the width/height of machine (updated to 100 from 50 for bigger machines)
+    const margin = lengthToRemove; // Half the width/height of machine (updated to 100 from 50 for bigger machines)
     const startX = sourceX + ndx * margin;
     const startY = sourceY + ndy * margin;
     const endX = targetX - ndx * margin;
