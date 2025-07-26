@@ -279,7 +279,7 @@ CraftingCalculator.prototype.setMachineCount = function(machine) {
         // Update count badge
         const countBadge = machine.element.querySelector('.machine-count');
         countBadge.textContent = count;
-        countBadge.style.display = count > 1 ? 'flex' : 'none';
+        // countBadge.style.display = count > 1 ? 'flex' : 'none';
 
         // Update effective output rate based on machine count
         this.updateMachineStatuses();
