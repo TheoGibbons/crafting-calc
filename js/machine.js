@@ -261,7 +261,7 @@ CraftingCalculator.prototype.handleMachineContextMenu = function(e, machineEleme
 };
 
 CraftingCalculator.prototype.renameMachine = function(machine) {
-    const newName = prompt('Enter new name:', machine.name);
+    const newName = prompt('New name:', machine.name);
     if (newName !== null && newName.trim() !== '') {
         machine.name = newName.trim();
         const headerName = machine.element.querySelector('.machine-header-name');

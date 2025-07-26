@@ -258,7 +258,7 @@ CraftingCalculator.prototype.updateLinkLabel = function(link) {
 };
 
 CraftingCalculator.prototype.setLinkThroughput = function(link) {
-    const input = prompt('Enter max throughput rate (items/min):', link.throughput);
+    const input = prompt('Max throughput rate (items/min):', link.throughput);
     const rate = parseFloat(input);
 
     if (!isNaN(rate) && rate >= 0) {

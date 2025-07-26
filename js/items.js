@@ -1,9 +1,9 @@
 // Extension of the CraftingCalculator class with input/output item functionality
 CraftingCalculator.prototype.addInputItem = function(machine) {
-    const itemName = prompt('Enter input item name:');
+    const itemName = prompt('Input item name:');
 
     if (itemName !== null && itemName.trim() !== '') {
-        const itemRate = prompt(`Enter consumption rate for ${itemName} (items/min):`);
+        const itemRate = prompt(`Consumption rate of ${itemName} by 1x${machine.name} (items/min):`);
         const rate = parseFloat(itemRate);
 
         if (!isNaN(rate) && rate > 0) {
@@ -119,7 +119,7 @@ CraftingCalculator.prototype.editInputItemRate = function(machine, itemName) {
     const currentInputItem = machine.inputItems[itemName];
 
     // Ask for new rate
-    const rateInput = prompt(`Enter consumption rate for ${itemName} (items/min):`, currentInputItem.rate);
+    const rateInput = prompt(`Consumption rate of ${itemName} by 1x${machine.name} (items/min):`, currentInputItem.rate);
     const newRate = parseFloat(rateInput);
 
     // Validate rate
@@ -154,10 +154,10 @@ CraftingCalculator.prototype.deleteInputItem = function(machine, itemName) {
 
 // Output item methods
 CraftingCalculator.prototype.addOutputItem = function(machine) {
-    const itemName = prompt('Enter output item name:');
+    const itemName = prompt('Output item name:');
 
     if (itemName !== null && itemName.trim() !== '') {
-        const itemRate = prompt(`Enter production rate for ${itemName} (items/min):`);
+        const itemRate = prompt(`Production rate of ${itemName} by 1x${machine.name} (items/min):`);
         const rate = parseFloat(itemRate);
 
         if (!isNaN(rate) && rate > 0) {
@@ -292,7 +292,7 @@ CraftingCalculator.prototype.editOutputItemRate = function(machine, itemName) {
     const outputItem = machine.outputItems[itemName];
 
     // Ask for new rate
-    const rateInput = prompt(`Enter production rate for ${itemName} (items/min):`, outputItem.rate);
+    const rateInput = prompt(`Production rate of ${itemName} by 1x${machine.name} (items/min):`, outputItem.rate);
     const newRate = parseFloat(rateInput);
 
     // Validate rate
