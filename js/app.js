@@ -9,6 +9,7 @@ class CraftingCalculator {
         // Canvas elements
         this.canvasContainer = document.getElementById('canvas-container');
         this.canvas = document.getElementById('canvas');
+        this.newProjectBtn = document.getElementById('new-project');
         this.addMachineBtn = document.getElementById('add-machine-btn');
         this.resetViewBtn = document.getElementById('reset-view-btn');
         this.saveBtn = document.getElementById('save-btn');
@@ -50,6 +51,7 @@ class CraftingCalculator {
 
     setupEventListeners() {
         // Button event listeners
+        this.newProjectBtn.addEventListener('click', () => this.newProject());
         this.addMachineBtn.addEventListener('click', () => this.addMachine());
         this.resetViewBtn.addEventListener('click', () => this.resetView());
         this.saveBtn.addEventListener('click', () => this.saveState());

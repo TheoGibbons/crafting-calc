@@ -166,14 +166,34 @@ CraftingCalculator.prototype.updateLinkPosition = function(link) {
     const targetRect = link.target.element.getBoundingClientRect();
 
     // Calculate center points in canvas space
-    const sourceX = (sourceRect.left - this.panX) / this.scale + sourceRect.width / 2;
-    const sourceY = (sourceRect.top - this.panY) / this.scale + sourceRect.height / 2;
-    const targetX = (targetRect.left - this.panX) / this.scale + targetRect.width / 2;
-    const targetY = (targetRect.top - this.panY) / this.scale + targetRect.height / 2;
+    const sourceX = (sourceRect.left - this.panX + sourceRect.width / 2) / this.scale;
+    const sourceY = (sourceRect.top - this.panY + sourceRect.height / 2) / this.scale;
+    const targetX = (targetRect.left - this.panX + targetRect.width / 2) / this.scale;
+    const targetY = (targetRect.top - this.panY + targetRect.height / 2) / this.scale;
+
+    // Draw a dot of the canvas at the center of the source and target machines
+    // document.querySelectorAll('.link-dot').forEach(dot => dot.remove()); // Remove existing dots
+    // const sourceDot = document.createElement('div');
+    // sourceDot.className = 'link-dot';
+    // sourceDot.style.left = `${((sourceRect.left - this.panX+sourceRect.width/2))/this.scale}px`;
+    // sourceDot.style.top = `${((sourceRect.top - this.panY+sourceRect.height/2))/this.scale}px`;
+    // sourceDot.style.width = '10px';
+    // sourceDot.style.height = '10px';
+    // sourceDot.style.backgroundColor = 'red'; // Red dot for source
+    // sourceDot.style.position = 'absolute';
+    // sourceDot.style.zIndex = '100';
+    // this.canvas.appendChild(sourceDot);
+
+
+
 
     // Calculate direction vector
     const dx = targetX - sourceX;
     const dy = targetY - sourceY;
+
+    // const angle = Math.atan2(dy, dx);
+    // console.log(angle);
+
     const length = Math.sqrt(dx*dx + dy*dy);
 
     // Normalize direction vector
