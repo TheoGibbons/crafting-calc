@@ -511,6 +511,26 @@ class CraftingCalculator {
         // alert(`State "${stateName}" loaded successfully!`);
     }
 
+    newProject() {
+        // Confirm before clearing
+        if (!confirm('Create a new project? This will clear your current work.')) {
+            return;
+        }
+
+        // Clear the canvas
+        this.clearCanvas();
+
+        // Reset view
+        this.resetView();
+
+        // Reset IDs
+        this.nextMachineId = 1;
+        this.nextLinkId = 1;
+
+        // Add a starter machine
+        this.addMachine();
+    }
+
     clearCanvas() {
         // Remove all machines
         this.machines.forEach(machine => {
