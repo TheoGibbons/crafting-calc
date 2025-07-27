@@ -152,9 +152,6 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
                 // .sort((a, b) => a.throughput - b.throughput);        // Sort links from slowest to fastest
                 .sort((a, b) => this.getLinkCapacity(a) - this.getLinkCapacity(b));        // Sort links from slowest to fastest
 
-            if(name === 'Iron Ingot')
-            debugger;
-
             let outputItemThroughputRemaining = outputItem.currentThroughput;
             let linksVisited = 0;
 
