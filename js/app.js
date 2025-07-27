@@ -393,7 +393,7 @@ class CraftingCalculator {
             panY: this.panY
         };
     }
-
+    
     // Apply a state object to the application
     applyStateObject(state) {
         // Clear current state
@@ -640,21 +640,21 @@ class CraftingCalculator {
                 this.applyStateObject(importData.data);
 
                 alert(`Import from "${file.name}" successful!`);
-
+                
             } catch (error) {
                 console.error('Import error:', error);
                 alert(`Error importing file: ${error.message}`);
             }
-
+            
             // Clear the file input so the same file can be selected again
             this.importFile.value = '';
         };
-
+        
         reader.onerror = () => {
             alert('Error reading the file');
             this.importFile.value = '';
         };
-
+        
         reader.readAsText(file);
     }
 }

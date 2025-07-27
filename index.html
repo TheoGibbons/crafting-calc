@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crafting Calculator</title>
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- SVG Definitions for Arrow Markers -->
@@ -22,20 +24,22 @@
     </div>
 
     <div class="control-panel">
-        <button id="new-project">New Project</button>
-        <button id="add-machine-btn">Add Machine</button>
-        <button id="reset-view-btn">Reset View</button>
+        <button id="new-project"><i class="fas fa-file"></i> New Project</button>
+        <button id="export-btn"><i class="fas fa-file-export"></i> Export</button>
+        <button id="import-btn"><i class="fas fa-file-import"></i> Import</button>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+        <button id="reset-view-btn"><i class="fas fa-compress-arrows-alt"></i> Reset View</button>
     </div>
 
     <div class="save-load-panel">
-        <button id="save-btn">Save</button>
+        <button id="save-btn"><i class="fas fa-save"></i> Save</button>
         <select id="load-dropdown">
             <option value="">-- Load Saved State --</option>
         </select>
-        <button id="export-btn">Export Project</button>
-        <button id="import-btn">Import Project</button>
-        <input type="file" id="import-file" accept=".json" style="display: none;">
     </div>
+
+    <!-- Add Machine button moved to bottom right -->
+    <button id="add-machine-btn" class="bottom-right-btn"><i class="fas fa-plus-circle"></i> Add Machine</button>
 
     <!-- JavaScript files -->
     <script src="js/app.js"></script>

@@ -165,6 +165,21 @@ button:hover {
     background: #3367d6;
 }
 
+/* Add Machine button at bottom right */
+.bottom-right-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px 16px;
+}
+
+/* Button icons */
+button i {
+    margin-right: 5px;
+}
+
 /* Status colors */
 .status-green {
     border-color: #0a0;
