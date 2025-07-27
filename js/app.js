@@ -33,6 +33,8 @@ class CraftingCalculator {
         this.nextLinkId = 1;
         this.activeLinkStart = null;
         this.contextMenu = null;
+
+        this.localStorageKey = 'craftingCalculatorStates';
     }
 
     initialize() {
@@ -155,7 +157,7 @@ class CraftingCalculator {
 
     tryRestoreLatestSave() {
         // Get saved states from localStorage
-        const savedStates = JSON.parse(localStorage.getItem('craftingCalculatorStates') || '{}');
+        const savedStates = JSON.parse(localStorage.getItem(this.localStorageKey) || '{}');
         let latestSave
 
         // Find the latest
@@ -216,7 +218,7 @@ class CraftingCalculator {
         const state = this.createStateObject();
 
         // Get existing saved states
-        let savedStates = JSON.parse(localStorage.getItem('craftingCalculatorStates') || '{}');
+        let savedStates = JSON.parse(localStorage.getItem(this.localStorageKey) || '{}');
 
         // Add this state with timestamp
         savedStates[stateName] = {
@@ -249,7 +251,7 @@ class CraftingCalculator {
         }
 
         // Save back to localStorage
-        localStorage.setItem('craftingCalculatorStates', JSON.stringify(savedStates));
+        localStorage.setItem(this.localStorageKey, JSON.stringify(savedStates));
 
         // Update the dropdown
         this.loadSavedStatesList();
@@ -272,7 +274,7 @@ class CraftingCalculator {
 
     loadSavedStatesList() {
         // Get saved states from localStorage
-        const savedStates = JSON.parse(localStorage.getItem('craftingCalculatorStates') || '{}');
+        const savedStates = JSON.parse(localStorage.getItem(this.localStorageKey) || '{}');
 
         // Clear dropdown except for the default option
         while (this.loadDropdown.options.length > 1) {
@@ -304,7 +306,7 @@ class CraftingCalculator {
         this.loadDropdown.selectedIndex = 0;
 
         // Get saved states from localStorage
-        const savedStates = JSON.parse(localStorage.getItem('craftingCalculatorStates') || '{}');
+        const savedStates = JSON.parse(localStorage.getItem(this.localStorageKey) || '{}');
 
         if (!savedStates[stateName]) {
             alert(`Error: Could not find saved state "${stateName}"`);
