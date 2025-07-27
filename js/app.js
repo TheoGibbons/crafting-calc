@@ -17,6 +17,7 @@ class CraftingCalculator {
         this.exportBtn = document.getElementById('export-btn');
         this.importBtn = document.getElementById('import-btn');
         this.importFile = document.getElementById('import-file');
+        this.optimizeMachinesBtn = document.getElementById('optimize-machines-btn');
 
         // Canvas state
         this.scale = 1;
@@ -64,6 +65,7 @@ class CraftingCalculator {
         this.exportBtn.addEventListener('click', () => this.exportState());
         this.importBtn.addEventListener('click', () => this.importFile.click());
         this.importFile.addEventListener('change', (e) => this.handleImportFile(e));
+        this.optimizeMachinesBtn.addEventListener('click', () => this.optimizeMachineCount());
 
         // Pan functionality
         this.canvasContainer.addEventListener('mousedown', (e) => this.handleCanvasMouseDown(e));
@@ -455,7 +457,7 @@ class CraftingCalculator {
             // Add machine count badge
             const countBadge = document.createElement('div');
             countBadge.className = 'machine-count';
-            countBadge.textContent = machineData.count;
+            countBadge.textContent = machineData.count; // Round to 2 decimal places
             countBadge.title = "Click to change machine count";
 
             // Add click to set count

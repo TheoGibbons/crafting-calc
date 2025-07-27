@@ -175,6 +175,16 @@ button:hover {
     padding: 10px 16px;
 }
 
+/* Optimize Machine Count button at bottom left */
+.bottom-left-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px 16px;
+}
+
 /* Button icons */
 button i {
     margin-right: 5px;

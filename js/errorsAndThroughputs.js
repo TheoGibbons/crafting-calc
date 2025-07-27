@@ -376,3 +376,93 @@ CraftingCalculator.prototype.setSimpleErrors = function () {
     })
 
 }
+
+CraftingCalculator.prototype.optimizeMachineCount = function () {
+
+    if (this.getAllLinksInALoop().length) {
+        alert("Cannot optimize machine count when there are loops in the graph");
+        return;
+    }
+
+    // First, update the current machine statuses to get accurate throughputs
+    this.updateMachineStatuses();
+
+
+    // List of generator machine IDs (machines that don't require anything to produce an output)
+    const generatorMachines = this.machines.filter(
+      m => !this.links.filter(l => l.item && l.targetId === m.id).length
+    );
+
+    // We are going to work through each generator machine and set the count of each connected machine to the maximum possible
+    // All the way down the chain of machines
+    // There will be an issue if we get to a machine that is feed by multiple machines, but we will just set the count to the maximum possible for that machine
+    // and then work our way back up the chain
+
+    // Keep track of machines we've processed
+    const processedMachines = new Set();
+
+    // Process each machine in the network, starting from generators
+    const optimizeMachineAndDownstream = (machine, targetThroughput = null) => {
+        if (processedMachines.has(machine.id)) {
+            return;
+        }
+
+        // Mark this machine as processed
+        processedMachines.add(machine.id);
+
+        // For generator machines, keep their current count
+        // For other machines, calculate optimal count based on inputs
+        if (targetThroughput !== null) {
+            // Find the limiting input item
+            let maxRequiredCount = 0;
+
+            Object.entries(machine.inputItems).forEach(([itemName, inputItem]) => {
+                // Calculate how many machines needed to process this input
+                const countNeeded = targetThroughput / inputItem.rate;
+                maxRequiredCount = Math.max(maxRequiredCount, countNeeded);
+            });
+
+            // Update machine count (round up to ensure sufficient capacity)
+            machine.count = Math.ceil(maxRequiredCount);
+        }
+
+        // Process outgoing links and downstream machines
+        const outgoingLinks = this.links.filter(l => l.source.id === machine.id && l.item);
+
+        // Group links by target machine
+        const targetMachines = {};
+        outgoingLinks.forEach(link => {
+            if (!targetMachines[link.target.id]) {
+                targetMachines[link.target.id] = {
+                    machine: this.machines.find(m => m.id === link.target.id),
+                    totalThroughput: 0,
+                    items: {}
+                };
+            }
+
+            const item = link.item;
+            const outputItem = machine.outputItems[item];
+            const throughput = outputItem.rate * machine.count;
+
+            // Track throughput by item
+            targetMachines[link.target.id].items[item] =
+                (targetMachines[link.target.id].items[item] || 0) + throughput;
+
+            // Track total throughput to this machine
+            targetMachines[link.target.id].totalThroughput += throughput;
+        });
+
+        // Process each downstream machine
+        Object.values(targetMachines).forEach(targetData => {
+            optimizeMachineAndDownstream(targetData.machine, targetData.totalThroughput);
+        });
+    };
+
+    // Start optimization from each generator
+    generatorMachines.forEach(machine => {
+        optimizeMachineAndDownstream(machine);
+    });
+
+    // Update all machine statuses to reflect new counts
+    this.updateMachineStatuses();
+};
