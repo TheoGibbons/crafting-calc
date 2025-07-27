@@ -14,6 +14,9 @@ class CraftingCalculator {
         this.resetViewBtn = document.getElementById('reset-view-btn');
         this.saveBtn = document.getElementById('save-btn');
         this.loadDropdown = document.getElementById('load-dropdown');
+        this.exportBtn = document.getElementById('export-btn');
+        this.importBtn = document.getElementById('import-btn');
+        this.importFile = document.getElementById('import-file');
 
         // Canvas state
         this.scale = 1;
@@ -56,6 +59,9 @@ class CraftingCalculator {
         this.resetViewBtn.addEventListener('click', () => this.resetView());
         this.saveBtn.addEventListener('click', () => this.saveState());
         this.loadDropdown.addEventListener('change', () => this.loadState());
+        this.exportBtn.addEventListener('click', () => this.exportState());
+        this.importBtn.addEventListener('click', () => this.importFile.click());
+        this.importFile.addEventListener('change', (e) => this.handleImportFile(e));
 
         // Pan functionality
         this.canvasContainer.addEventListener('mousedown', (e) => this.handleCanvasMouseDown(e));
@@ -198,31 +204,7 @@ class CraftingCalculator {
         if (!stateName || stateName.trim() === '') return;
 
         // Create a data structure to store the state
-        const state = {
-            machines: this.machines.map(machine => ({
-                id: machine.id,
-                name: machine.name,
-                count: machine.count,
-                left: parseInt(machine.element.style.left),
-                top: parseInt(machine.element.style.top),
-                inputItems: {...machine.inputItems},
-                outputItems: {...machine.outputItems},
-                inputs: [...machine.inputs],
-                outputs: [...machine.outputs]
-            })),
-            links: this.links.map(link => ({
-                id: link.id,
-                sourceId: link.source.id,
-                targetId: link.target.id,
-                throughput: link.throughput,
-                item: link.item
-            })),
-            nextMachineId: this.nextMachineId,
-            nextLinkId: this.nextLinkId,
-            scale: this.scale,
-            panX: this.panX,
-            panY: this.panY
-        };
+        const state = this.createStateObject();
 
         // Get existing saved states
         let savedStates = JSON.parse(localStorage.getItem('craftingCalculatorStates') || '{}');
@@ -303,7 +285,6 @@ class CraftingCalculator {
     }
 
     loadState(stateName) {
-
         if(!stateName) {
             stateName = this.loadDropdown.value;
         }
@@ -323,11 +304,98 @@ class CraftingCalculator {
 
         const state = savedStates[stateName].data;
 
-        // // Confirm before loading
-        // if (!confirm(`Load saved state "${stateName}"? This will replace your current work.`)) {
-        //     return;
-        // }
+        // Apply the state to the application
+        this.applyStateObject(state);
 
+        // alert(`State "${stateName}" loaded successfully!`);
+    }
+
+    newProject() {
+        // Confirm before clearing
+        if (!confirm('Create a new project? This will clear your current work.')) {
+            return;
+        }
+
+        // Clear the canvas
+        this.clearCanvas();
+
+        // Reset view
+        this.resetView();
+
+        // Reset IDs
+        this.nextMachineId = 1;
+        this.nextLinkId = 1;
+
+        // Add a starter machine
+        this.addMachine();
+    }
+
+    clearCanvas() {
+        // Remove all machines
+        this.machines.forEach(machine => {
+            machine.element.remove();
+        });
+
+        // Remove all links
+        this.links.forEach(link => {
+            link.element.remove();
+            link.label.remove();
+        });
+
+        // Reset arrays
+        this.machines = [];
+        this.links = [];
+    }
+
+    createIconsHolder() {
+        const iconsHolder = document.createElement('div');
+        iconsHolder.classList.add('icons-holder');
+
+        const infoIcon = document.createElement('div');
+        infoIcon.classList.add('info-icon');
+        infoIcon.style.display = 'none';
+
+        const errorIcon = document.createElement('div');
+        errorIcon.classList.add('error-icon');
+        errorIcon.style.display = 'none';
+
+        iconsHolder.appendChild(infoIcon);
+        iconsHolder.appendChild(errorIcon);
+
+        return iconsHolder;
+   }
+
+    // Create a state object from the current application state
+    createStateObject() {
+        return {
+            machines: this.machines.map(machine => ({
+                id: machine.id,
+                name: machine.name,
+                count: machine.count,
+                left: parseInt(machine.element.style.left),
+                top: parseInt(machine.element.style.top),
+                inputItems: {...machine.inputItems},
+                outputItems: {...machine.outputItems},
+                inputs: [...machine.inputs],
+                outputs: [...machine.outputs]
+            })),
+            links: this.links.map(link => ({
+                id: link.id,
+                sourceId: link.source.id,
+                targetId: link.target.id,
+                throughput: link.throughput,
+                item: link.item
+            })),
+            nextMachineId: this.nextMachineId,
+            nextLinkId: this.nextLinkId,
+            scale: this.scale,
+            panX: this.panX,
+            panY: this.panY
+        };
+    }
+
+    // Apply a state object to the application
+    applyStateObject(state) {
         // Clear current state
         this.clearCanvas();
 
@@ -378,7 +446,6 @@ class CraftingCalculator {
             countBadge.className = 'machine-count';
             countBadge.textContent = machineData.count;
             countBadge.title = "Click to change machine count";
-            // countBadge.style.display = machineData.count > 1 ? 'flex' : 'none';
 
             // Add click to set count
             countBadge.addEventListener('click', (e) => {
@@ -450,7 +517,6 @@ class CraftingCalculator {
             const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             hitbox.classList.add('link-hitbox');
 
-
             const label = document.createElement('div');
             label.classList.add('link-label');
 
@@ -507,63 +573,88 @@ class CraftingCalculator {
 
         // Update machine status colors
         this.updateMachineStatuses();
-
-        // alert(`State "${stateName}" loaded successfully!`);
     }
 
-    newProject() {
-        // Confirm before clearing
-        if (!confirm('Create a new project? This will clear your current work.')) {
+    // Export the current state to a file
+    exportState() {
+        if (this.machines.length === 0) {
+            alert("Nothing to export. Create some machines first.");
             return;
         }
 
-        // Clear the canvas
-        this.clearCanvas();
+        // Prompt for a name
+        const exportName = prompt('Enter a name for this export:');
+        if (!exportName || exportName.trim() === '') return; // User cancelled
 
-        // Reset view
-        this.resetView();
+        // Create a data structure to store the state using our helper method
+        const state = this.createStateObject();
 
-        // Reset IDs
-        this.nextMachineId = 1;
-        this.nextLinkId = 1;
+        // Create the export object with metadata
+        const exportData = {
+            version: "1.0",
+            timestamp: new Date().toISOString(),
+            name: exportName,
+            data: state
+        };
 
-        // Add a starter machine
-        this.addMachine();
+        // Convert to JSON and create a Blob
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+
+        // Create a download link and trigger the download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = `${exportName.replace(/\s+/g, '_')}.json`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        console.log(`Exported "${exportName}" successfully!`);
     }
 
-    clearCanvas() {
-        // Remove all machines
-        this.machines.forEach(machine => {
-            machine.element.remove();
-        });
+    // Handle file import
+    handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) {
+            return; // No file selected
+        }
 
-        // Remove all links
-        this.links.forEach(link => {
-            link.element.remove();
-            link.label.remove();
-        });
+        // Confirm before importing
+        if (!confirm(`Import state from "${file.name}"? This will replace your current work.`)) {
+            this.importFile.value = ''; // Clear the file input
+            return;
+        }
 
-        // Reset arrays
-        this.machines = [];
-        this.links = [];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                // Parse the JSON file
+                const importData = JSON.parse(e.target.result);
+
+                // Basic validation
+                if (!importData.data || !importData.data.machines || !Array.isArray(importData.data.machines)) {
+                    throw new Error('Invalid import file format');
+                }
+
+                // Apply the imported state using our helper method
+                this.applyStateObject(importData.data);
+
+                alert(`Import from "${file.name}" successful!`);
+
+            } catch (error) {
+                console.error('Import error:', error);
+                alert(`Error importing file: ${error.message}`);
+            }
+
+            // Clear the file input so the same file can be selected again
+            this.importFile.value = '';
+        };
+
+        reader.onerror = () => {
+            alert('Error reading the file');
+            this.importFile.value = '';
+        };
+
+        reader.readAsText(file);
     }
-
-    createIconsHolder() {
-        const iconsHolder = document.createElement('div');
-        iconsHolder.classList.add('icons-holder');
-
-        const infoIcon = document.createElement('div');
-        infoIcon.classList.add('info-icon');
-        infoIcon.style.display = 'none';
-
-        const errorIcon = document.createElement('div');
-        errorIcon.classList.add('error-icon');
-        errorIcon.style.display = 'none';
-
-        iconsHolder.appendChild(infoIcon);
-        iconsHolder.appendChild(errorIcon);
-
-        return iconsHolder;
-    }
-
 }
