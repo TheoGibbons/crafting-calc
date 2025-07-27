@@ -46,7 +46,7 @@ class CraftingCalculator {
         setInterval(() => { this.autosave() }, 10000);
 
         // Restore the latest autosave if one is available
-        if(!this.tryRestoreAutosave()) {
+        if(!this.tryRestoreLatestSave()) {
             // Add a starter machine
             this.addMachine();
         }
@@ -153,22 +153,31 @@ class CraftingCalculator {
         this.links.forEach(link => this.updateLinkPosition(link));
     }
 
-    tryRestoreAutosave() {
+    tryRestoreLatestSave() {
         // Get saved states from localStorage
         const savedStates = JSON.parse(localStorage.getItem('craftingCalculatorStates') || '{}');
+        let latestSave
 
-        // Find the latest autosave
+        // Find the latest
         const saves = Object.keys(savedStates);
-        if (saves.length === 0) return false;
+        if (saves.length === 0) {
+            // Users first time using the app, no saves available
+            // Load the default save
+            const defaultSave = this.getDefaultSave();
+            this.applyStateObject(defaultSave.data)
 
-        // Sort by timestamp and get the latest one
-        saves.sort((a, b) => new Date(savedStates[b].timestamp) - new Date(savedStates[a].timestamp));
-        const latestSave = saves[0];
+            console.log("First time visitor detected. Restored default save:", defaultSave);
+        } else {
+            // Sort by timestamp and get the latest one
+            saves.sort((a, b) => new Date(savedStates[b].timestamp) - new Date(savedStates[a].timestamp));
+            latestSave = saves[0];
 
-        // Load the latest autosave
-        this.loadState(latestSave);
+            // Load the latest
+            this.loadState(latestSave);
 
-        console.log("Restored latest save:", latestSave);
+            console.log("Restored latest save:", latestSave);
+        }
+
 
         return true;
     }
@@ -657,4 +666,5 @@ class CraftingCalculator {
         
         reader.readAsText(file);
     }
+
 }
