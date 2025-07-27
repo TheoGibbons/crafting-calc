@@ -523,7 +523,7 @@ class CraftingCalculator {
             const labelText = document.createElement('div');
             labelText.classList.add('link-text');
             labelText.textContent = '? items/min';
-            labelText.title = "Click to set throughput rate";
+            labelText.title = "Click to set max throughput rate";
             labelText.style.cursor = 'pointer';
 
             // Add click event to set throughput
@@ -551,7 +551,7 @@ class CraftingCalculator {
                 line,
                 hitbox,
                 label,
-                throughput: linkData.throughput || 0,
+                throughput: linkData.throughput,
                 item: linkData.item || ''
             };
 

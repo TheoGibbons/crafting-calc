@@ -64,7 +64,7 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
     const labelText = document.createElement('div');
     labelText.classList.add('link-text');
     labelText.textContent = '? items/min';
-    labelText.title = "Click to set throughput rate";
+    labelText.title = "Click to set max throughput rate";
     labelText.style.cursor = 'pointer';
 
     // Add click event to set throughput
@@ -92,7 +92,7 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
         line,
         hitbox,
         label,
-        throughput: 0,
+        throughput: null,
         item: Object.keys(sourceMachine.outputItems)[0] || '' // Default to source machine's output item
     };
 
@@ -237,7 +237,7 @@ CraftingCalculator.prototype.updateLinkPosition = function(link) {
 
 CraftingCalculator.prototype.updateLinkLabel = function(link) {
     const itemText = `<span class="item-badge">${link.item ? link.item : '???'}</span>`;
-    const rateText = `${link.throughput || '?'} items/min`;
+    const rateText = `<span class="item-throughput">???</span>`;
     link.label.querySelector('.link-text').innerHTML = itemText + ' ' + rateText;
 
     // Add click event to the item badge if it exists
@@ -258,14 +258,12 @@ CraftingCalculator.prototype.updateLinkLabel = function(link) {
 };
 
 CraftingCalculator.prototype.setLinkThroughput = function(link) {
-    const input = prompt('Max throughput rate (items/min):', link.throughput);
+    const input = prompt("Max throughput rate (items/min):\nLeave blank for infinity", link.throughput === null ? '' : link.throughput);
     const rate = parseFloat(input);
 
-    if (!isNaN(rate) && rate >= 0) {
-        link.throughput = rate;
-        this.updateLinkLabel(link);
-        this.updateMachineStatuses();
-    }
+    link.throughput = isNaN(rate) ? null : rate;
+    this.updateLinkLabel(link);
+    this.updateMachineStatuses();
 };
 
 CraftingCalculator.prototype.deleteLink = function(link) {

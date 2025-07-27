@@ -39,6 +39,7 @@ CraftingCalculator.prototype.resetThroughputsOnMachineAndLinks = function () {
         link.errorMessages = [];
         link.currentThroughput = 0;
         link.attemptedThroughput = 0;
+        link.capacity = null;
         link.efficiency = 0;
     }
 };
@@ -148,15 +149,21 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
 
             // Put onto the output links
             const outputLinks = this.links.filter(l => l.source.id === machine.id && l.item === name)
-                .sort((a, b) => a.throughput - b.throughput);        // Sort links from slowest to fastest
+                // .sort((a, b) => a.throughput - b.throughput);        // Sort links from slowest to fastest
+                .sort((a, b) => this.getLinkCapacity(a) - this.getLinkCapacity(b));        // Sort links from slowest to fastest
+
+            if(name === 'Iron Ingot')
+            debugger;
 
             let outputItemThroughputRemaining = outputItem.currentThroughput;
             let linksVisited = 0;
 
             outputLinks.forEach(link => {
                 link.attemptedThroughput = outputItemThroughputRemaining / (outputLinks.length - linksVisited);
-                link.currentThroughput = Math.min(link.attemptedThroughput, link.throughput);
-                link.efficiency = link.attemptedThroughput / link.throughput;
+                link.capacity = this.getLinkCapacity(link);
+                link.currentThroughput = Math.min(link.attemptedThroughput, link.capacity);
+                // link.currentThroughput = link.throughput === null ? link.attemptedThroughput : Math.min(link.attemptedThroughput, link.throughput);
+                link.efficiency = link.attemptedThroughput / link.currentThroughput;
 
                 outputItemThroughputRemaining -= link.currentThroughput;
                 linksVisited++;
@@ -204,6 +211,25 @@ CraftingCalculator.prototype.updateMachineThroughputs = function () {
     //     }
     // });
 
+}
+
+CraftingCalculator.prototype.getLinkCapacity = function (link) {
+    if (link.capacity !== null) {
+        // If the link already has a capacity set, return it
+        return link.capacity;
+    }
+
+    const targetMachine = this.machines.find(m => m.id === link.target.id);
+    if (!targetMachine) {
+        console.error(`Target machine with ID ${link.target.id} not found for link ${link.id}`);
+        return 0;
+    }
+    link.capacity = Math.min(
+        targetMachine.inputItems[link.item].rate * targetMachine.count,
+        link.throughput === null ? Infinity : link.throughput,
+    );
+
+    return link.capacity;
 }
 
 CraftingCalculator.prototype.percentageToColor = function (percentage) {
@@ -284,6 +310,7 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
     this.links.forEach(link => {
         const errorIcon = link.label.querySelector('.error-icon');
         const infoIcon = link.label.querySelector('.info-icon');
+        const itemThroughput = link.label.querySelector('.item-throughput');
 
         errorIcon.style.display = 'none';
         infoIcon.style.display = 'none';
@@ -293,9 +320,10 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             errorIcon.style.display = '';
             errorIcon.title = link.errorMessages.join("\n");
         } else {
+            itemThroughput.textContent = `${link.currentThroughput} items/min`;
             infoIcon.style.display = '';
             infoIcon.style.background = this.percentageToColor(link.efficiency);
-            infoIcon.title = `Max throughput: ${link.throughput} items/s\n` +
+            infoIcon.title = `Max throughput: ${link.throughput === null ? 'Not set' : link.throughput + ' items/s'}\n` +
                 `Current throughput: ${link.currentThroughput} items/s\n` +
                 (link.currentThroughput !== link.attemptedThroughput ? `!!! Input: ${link.attemptedThroughput} items/s\n` : '') +
                 `Efficiency: ${(link.efficiency * 100).toFixed(0)}%`;
@@ -309,10 +337,10 @@ CraftingCalculator.prototype.setSimpleErrors = function () {
             // If there is no item set on the link
             link.state = 'error';
             link.errorMessages.push('Add item');
-        } else if (!link.throughput) {
-            // If there is no throughput rate set on the link
-            link.state = 'error';
-            link.errorMessages.push('Add throughput rate');
+        // } else if (!link.throughput) {
+        //     // If there is no throughput rate set on the link
+        //     link.state = 'error';
+        //     link.errorMessages.push('Add throughput rate');
         } else if (typeof link.source.outputItems[link.item] === 'undefined') {
             // If the link is transporting something that is not produced by the source machine
             link.state = 'error';
