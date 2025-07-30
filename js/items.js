@@ -1,5 +1,5 @@
 // Extension of the CraftingCalculator class with input/output item functionality
-CraftingCalculator.prototype.addInputItem = function(machine) {
+CraftingCalculator.prototype.promptToAddInputItem = function(machine) {
     const itemName = prompt('Input item name:');
 
     if (itemName !== null && itemName.trim() !== '') {
@@ -7,17 +7,21 @@ CraftingCalculator.prototype.addInputItem = function(machine) {
         const rate = parseFloat(itemRate);
 
         if (!isNaN(rate) && rate > 0) {
-            // Store item and rate in machine's inputItems
-            machine.inputItems[itemName.trim()] = {
-                rate,
-            };
-
-            // Update the machine to show the input items
-            this.updateMachineInputItemsDisplay(machine);
-
-            this.updateMachineStatuses();
+            this.addInputItem(machine, itemName, rate);
         }
     }
+};
+
+CraftingCalculator.prototype.addInputItem = function(machine,itemName,rate) {
+    // Store item and rate in machine's inputItems
+    machine.inputItems[itemName.trim()] = {
+        rate,
+    };
+
+    // Update the machine to show the input items
+    this.updateMachineInputItemsDisplay(machine);
+
+    this.updateMachineStatuses();
 };
 
 CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) {
@@ -53,7 +57,7 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
             itemName.style.cursor = 'pointer';
             itemName.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.editInputItemName(machine, item);
+                this.promptToEditInputItemName(machine, item);
             });
 
             // Input rate (clickable to edit rate only)
@@ -64,7 +68,7 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
             itemRate.style.cursor = 'pointer';
             itemRate.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.editInputItemRate(machine, item);
+                this.promptToEditInputItemRate(machine, item);
             });
 
             // Delete button
@@ -95,9 +99,7 @@ CraftingCalculator.prototype.updateMachineInputItemsDisplay = function(machine) 
     }
 };
 
-CraftingCalculator.prototype.editInputItemName = function(machine, itemName) {
-    const currentInputItem = machine.inputItems[itemName];
-
+CraftingCalculator.prototype.promptToEditInputItemName = function(machine, itemName) {
     // Ask for new name
     const newName = prompt(`Edit input item name:`, itemName);
 
@@ -106,22 +108,32 @@ CraftingCalculator.prototype.editInputItemName = function(machine, itemName) {
 
     // If the name changed, delete the old entry and add a new one with the same rate
     if (newName.trim() !== itemName) {
-        delete machine.inputItems[itemName];
-        machine.inputItems[newName.trim()] = {rate: currentInputItem.rate};
-
-        // Update the display
-        this.updateMachineInputItemsDisplay(machine);
-        this.updateMachineStatuses();
+        this.editInputItemName(machine, itemName, newName);
     }
 };
 
-CraftingCalculator.prototype.editInputItemRate = function(machine, itemName) {
+CraftingCalculator.prototype.editInputItemName = function(machine, itemName, newName) {
+    const currentInputItem = machine.inputItems[itemName];
+    
+    delete machine.inputItems[itemName];
+    machine.inputItems[newName.trim()] = {rate: currentInputItem.rate};
+
+    // Update the display
+    this.updateMachineInputItemsDisplay(machine);
+    this.updateMachineStatuses();
+};
+
+CraftingCalculator.prototype.promptToEditInputItemRate = function(machine, itemName) {
     const currentInputItem = machine.inputItems[itemName];
 
     // Ask for new rate
     const rateInput = prompt(`Consumption rate of ${itemName} by 1x${machine.name} (items/min):`, currentInputItem.rate);
     const newRate = parseFloat(rateInput);
 
+    this.editInputItemRate(machine, itemName, newRate);
+};
+
+CraftingCalculator.prototype.editInputItemRate = function(machine, itemName, newRate) {
     // Validate rate
     if (isNaN(newRate) || newRate <= 0) {
         alert('Please enter a valid positive number for the rate');
@@ -130,9 +142,6 @@ CraftingCalculator.prototype.editInputItemRate = function(machine, itemName) {
 
     // Update with new rate
     machine.inputItems[itemName] = {rate: newRate};
-
-    // Update total input rate
-    machine.inputRate = Object.values(machine.inputItems).reduce((sum, inputItem) => sum + inputItem.rate, 0);
 
     // Update the display
     this.updateMachineInputItemsDisplay(machine);
@@ -143,9 +152,6 @@ CraftingCalculator.prototype.deleteInputItem = function(machine, itemName) {
     if (confirm(`Delete input item "${itemName}"?`)) {
         delete machine.inputItems[itemName];
 
-        // Update total input rate
-        machine.inputRate = Object.values(machine.inputItems).reduce((sum, inputItem) => sum + inputItem.rate, 0);
-
         // Update the display
         this.updateMachineInputItemsDisplay(machine);
         this.updateMachineStatuses();
@@ -153,7 +159,7 @@ CraftingCalculator.prototype.deleteInputItem = function(machine, itemName) {
 };
 
 // Output item methods
-CraftingCalculator.prototype.addOutputItem = function(machine) {
+CraftingCalculator.prototype.promptToAddOutputItem = function(machine) {
     const itemName = prompt('Output item name:');
 
     if (itemName !== null && itemName.trim() !== '') {
@@ -161,27 +167,32 @@ CraftingCalculator.prototype.addOutputItem = function(machine) {
         const rate = parseFloat(itemRate);
 
         if (!isNaN(rate) && rate > 0) {
-            // Store item and rate in machine's outputItems
-            machine.outputItems[itemName.trim()] = {rate};
-
-            // Update total output rate
-            machine.outputRate = Object.values(machine.outputItems).reduce((sum, outputItem) => sum + outputItem.rate, 0);
-
-            // Update all links outputting from this machine with this item if they aren't already carrying something
-            for (const link of this.links) {
-                if (link.source.id === machine.id && !link.item) {
-                    link.item = itemName.trim();
-
-                    this.updateLinkLabel(link);
-                }
-            }
-
-            // Update the machine to show the output items
-            this.updateMachineOutputItemsDisplay(machine);
-
-            this.updateMachineStatuses();
+            this.addOutputItem(machine, itemName, rate)
         }
     }
+};
+
+// Output item methods
+CraftingCalculator.prototype.addOutputItem = function (machine, itemName, rate) {
+    itemName = itemName.trim();
+
+
+    // Store item and rate in machine's outputItems
+    machine.outputItems[itemName] = {rate};
+
+    // Update all links outputting from this machine with this item if they aren't already carrying something
+    for (const link of this.links) {
+        if (link.source.id === machine.id && !link.item) {
+            link.item = itemName;
+
+            this.updateLinkLabel(link);
+        }
+    }
+
+    // Update the machine to show the output items
+    this.updateMachineOutputItemsDisplay(machine);
+
+    this.updateMachineStatuses();
 };
 
 CraftingCalculator.prototype.updateMachineOutputItemsDisplay = function(machine) {
@@ -304,9 +315,6 @@ CraftingCalculator.prototype.editOutputItemRate = function(machine, itemName) {
     // Update with new rate
     machine.outputItems[itemName] = {rate: newRate};
 
-    // Update total output rate
-    machine.outputRate = Object.values(machine.outputItems).reduce((sum, outputItem) => sum + outputItem.rate, 0);
-
     // Update the display
     this.updateMachineOutputItemsDisplay(machine);
     this.updateMachineStatuses();
@@ -315,9 +323,6 @@ CraftingCalculator.prototype.editOutputItemRate = function(machine, itemName) {
 CraftingCalculator.prototype.deleteOutputItem = function(machine, itemName) {
     if (confirm(`Delete output item "${itemName}"?`)) {
         delete machine.outputItems[itemName];
-
-        // Update total output rate
-        machine.outputRate = Object.values(machine.outputItems).reduce((sum, outputItem) => sum + outputItem.rate, 0);
 
         // Update the display
         this.updateMachineOutputItemsDisplay(machine);

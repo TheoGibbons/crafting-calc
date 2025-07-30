@@ -1,3 +1,7 @@
+/**
+ * Check for user config errors and display them
+ * Update the throughput values on machines and links
+ */
 CraftingCalculator.prototype.updateMachineStatuses = function () {
     // return;
 
@@ -222,7 +226,9 @@ CraftingCalculator.prototype.getLinkCapacity = function (link) {
         return 0;
     }
     link.capacity = Math.min(
-        targetMachine.inputItems[link.item].rate * targetMachine.count,
+        typeof targetMachine.inputItems[link.item]?.rate === 'undefined' ?
+            0 :
+            targetMachine.inputItems[link.item].rate * targetMachine.count,
         link.throughput === null ? Infinity : link.throughput,
     );
 

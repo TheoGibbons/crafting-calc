@@ -1,7 +1,11 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the application
-    const app = new CraftingCalculator();
-    app.initialize();
+document.addEventListener('DOMContentLoaded', function () {
+
+    if (document.getElementById('environment')?.value !== 'testing') {
+        // Initialize the application
+        const app = new CraftingCalculator();
+        app.initialize();
+    }
+
 });
 
 class CraftingCalculator {
@@ -464,7 +468,7 @@ class CraftingCalculator {
             countBadge.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const machineObj = this.machines.find(m => m.id === machineData.id);
-                this.setMachineCount(machineObj);
+                this.promptToSetMachineCount(machineObj);
             });
             machine.appendChild(countBadge);
 
@@ -489,8 +493,6 @@ class CraftingCalculator {
                 element: machine,
                 name: machineData.name,
                 count: machineData.count,
-                inputRate: 0,
-                outputRate: 0,
                 inputs: [...machineData.inputs],
                 outputs: [...machineData.outputs],
                 inputItems: {...machineData.inputItems},
@@ -544,7 +546,7 @@ class CraftingCalculator {
                 e.stopPropagation();
                 const linkObj = this.links.find(l => l.label.contains(labelText));
                 if (linkObj) {
-                    this.setLinkThroughput(linkObj);
+                    this.promptToSetLinkMaxThroughput(linkObj);
                 }
             });
 

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crafting Calculator Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .test-suite {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .test-suite-header {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .test-case {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 3px;
+        }
+        .test-case.pass {
+            background-color: #e6ffe6;
+        }
+        .test-case.fail {
+            background-color: #ffe6e6;
+        }
+        .test-result {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .pass .test-result:before {
+            content: "✓";
+            color: green;
+        }
+        .fail .test-result:before {
+            content: "✗";
+            color: red;
+        }
+        .test-details {
+            margin-left: 30px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .summary {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<input type="hidden" id="environment" value="testing"/>
+
+<div style="display: none">
+    <!-- SVG Definitions for Arrow Markers -->
+    <svg id="arrowDefs" width="0" height="0">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7"
+                    refX="10" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+            </marker>
+        </defs>
+    </svg>
+
+    <div id="canvas-container">
+        <div id="canvas"></div>
+    </div>
+
+    <div class="control-panel">
+        <button id="new-project"><i class="fas fa-file"></i> New Project</button>
+        <button id="export-btn"><i class="fas fa-file-export"></i> Export</button>
+        <button id="import-btn"><i class="fas fa-file-import"></i> Import</button>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+        <button id="reset-view-btn"><i class="fas fa-compress-arrows-alt"></i> Reset View</button>
+    </div>
+
+    <div class="save-load-panel">
+        <button id="save-btn"><i class="fas fa-save"></i> Save</button>
+        <select id="load-dropdown">
+            <option value="">-- Load Saved State --</option>
+        </select>
+    </div>
+
+    <!-- Add Machine button moved to bottom right -->
+    <button id="add-machine-btn" class="bottom-right-btn"><i class="fas fa-plus-circle"></i> Add Machine</button>
+
+    <!-- Optimize Machine Count button at bottom left -->
+    <button id="optimize-machines-btn" class="bottom-left-btn"><i class="fas fa-balance-scale"></i> Optimise Machine Counts TODO</button>
+</div>
+
+<div class="test-container">
+    <h1>Crafting Calculator Tests</h1>
+    <p>This page automatically runs tests for the Crafting Calculator application.</p>
+
+    <div id="test-results"></div>
+
+    <div class="summary" id="summary"></div>
+</div>
+
+<!-- Include the application scripts -->
+<script src="js/app.js"></script>
+<script src="js/items.js"></script>
+<script src="js/machine.js"></script>
+<script src="js/links.js"></script>
+<script src="js/errorsAndThroughputs.js"></script>
+<script src="js/defaultSave.js"></script>
+
+<!-- Include the test framework and tests -->
+<script src="js/test-framework.js"></script>
+<script src="js/tests.js"></script>
+</body>
+</html>

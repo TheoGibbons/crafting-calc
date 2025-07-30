@@ -44,7 +44,7 @@ CraftingCalculator.prototype.addMachine = function() {
         e.stopPropagation();
         const machineId = parseInt(machine.dataset.id);
         const machineObj = this.machines.find(m => m.id === machineId);
-        this.setMachineCount(machineObj);
+        this.promptToSetMachineCount(machineObj);
     });
     machine.appendChild(countBadge);
 
@@ -69,8 +69,6 @@ CraftingCalculator.prototype.addMachine = function() {
         element: machine,
         name,
         count: 1,
-        inputRate: 0,
-        outputRate: 0,
         inputs: [],
         outputs: [],
         inputItems: {},  // Map item names to required rates
@@ -130,7 +128,7 @@ CraftingCalculator.prototype.createInputsContainer = function(machine) {
         e.stopPropagation();
         const machineId = parseInt(machine.dataset.id);
         const machineObj = this.machines.find(m => m.id === machineId);
-        this.addInputItem(machineObj);
+        this.promptToAddInputItem(machineObj);
     });
 
     return inputsContainer;
@@ -178,7 +176,7 @@ CraftingCalculator.prototype.createOutputsContainer = function(machine) {
         e.stopPropagation();
         const machineId = parseInt(machine.dataset.id);
         const machineObj = this.machines.find(m => m.id === machineId);
-        this.addOutputItem(machineObj);
+        this.promptToAddOutputItem(machineObj);
     });
 
     return outputsContainer;
@@ -269,21 +267,25 @@ CraftingCalculator.prototype.renameMachine = function(machine) {
     }
 };
 
-CraftingCalculator.prototype.setMachineCount = function(machine) {
+CraftingCalculator.prototype.promptToSetMachineCount = function (machine) {
     const input = prompt('Enter number of machines:', machine.count);
     const count = parseFloat(input);
 
     if (!isNaN(count) && count > 0) {
-        machine.count = count;
-
-        // Update count badge
-        const countBadge = machine.element.querySelector('.machine-count');
-        countBadge.textContent = count;
-        // countBadge.style.display = count > 1 ? 'flex' : 'none';
-
-        // Update effective output rate based on machine count
-        this.updateMachineStatuses();
+        this.setMachineCount(machine, count);
     }
+};
+
+CraftingCalculator.prototype.setMachineCount = function (machine, count) {
+    machine.count = count;
+
+    // Update count badge
+    const countBadge = machine.element.querySelector('.machine-count');
+    countBadge.textContent = count;
+    // countBadge.style.display = count > 1 ? 'flex' : 'none';
+
+    // Update effective output rate based on machine count
+    this.updateMachineStatuses();
 };
 
 CraftingCalculator.prototype.deleteMachine = function(machine) {

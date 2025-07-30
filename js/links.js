@@ -72,7 +72,7 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
         e.stopPropagation();
         const linkObj = this.links.find(l => l.label.contains(labelText));
         if (linkObj) {
-            this.setLinkThroughput(linkObj);
+            this.promptToSetLinkMaxThroughput(linkObj);
         }
     });
 
@@ -112,6 +112,8 @@ CraftingCalculator.prototype.createLink = function(sourceMachine, targetMachine)
     hitbox.addEventListener('contextmenu', (e) => this.handleLinkContextMenu(e, link));
 
     this.updateMachineStatuses();
+
+    return link
 };
 
 CraftingCalculator.prototype.handleLinkContextMenu = function(e, link) {
@@ -257,10 +259,14 @@ CraftingCalculator.prototype.updateLinkLabel = function(link) {
     }
 };
 
-CraftingCalculator.prototype.setLinkThroughput = function(link) {
+CraftingCalculator.prototype.promptToSetLinkMaxThroughput = function(link) {
     const input = prompt("Max throughput rate (items/min):\nLeave blank for infinity", link.throughput === null ? '' : link.throughput);
     const rate = parseFloat(input);
 
+    this.setLinkThroughput(link, rate)
+};
+
+CraftingCalculator.prototype.setLinkThroughput = function(link, rate) {
     link.throughput = isNaN(rate) ? null : rate;
     this.updateLinkLabel(link);
     this.updateMachineStatuses();
