@@ -223,6 +223,37 @@ document.addEventListener('DOMContentLoaded', function () {
             assertEqual(machine5.count, 5, 'Machine 5 should have count of 5');
 
         });
+        test('Split Join', function () {
+            const calculator = createCalculator();
+
+            const machine1 = calculator.addMachine();
+            const machine2 = calculator.addMachine();
+            const machine3 = calculator.addMachine();
+            const machine4 = calculator.addMachine();
+
+            const link1 = calculator.createLink(machine1, machine2);
+            const link2 = calculator.createLink(machine1, machine3);
+            const link3 = calculator.createLink(machine2, machine4);
+            const link4 = calculator.createLink(machine3, machine4);
+
+            calculator.addOutputItem(machine1, 'Iron Bar', 200);
+            calculator.addOutputItem(machine2, 'Iron Plate', 50);
+            calculator.addOutputItem(machine3, 'Iron Rod', 25);
+            calculator.addOutputItem(machine4, 'Output Item', 1);
+
+            calculator.addInputItem(machine2, 'Iron Bar', 50);
+            calculator.addInputItem(machine3, 'Iron Bar', 25);
+            calculator.addInputItem(machine4, 'Iron Plate', 50);
+            calculator.addInputItem(machine4, 'Iron Rod', 25);
+
+            calculator.optimizeMachineCount()
+
+            assertEqual(machine1.count, 1, 'Machine 1 should have count of 1');
+            assertEqual(machine2.count.toFixed(1), 2.66.toFixed(1), 'Machine 2 should have count of 2.66');
+            assertEqual(machine3.count.toFixed(1), 2.66.toFixed(1), 'Machine 3 should have count of 2.66');
+            assertEqual(machine4.count.toFixed(1), 2.66.toFixed(1), 'Machine 4 should have count of 2.66');
+
+        });
     });
 
 });
