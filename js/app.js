@@ -1,10 +1,13 @@
+// Global variable
+window.app = null
+
 document.addEventListener('DOMContentLoaded', function () {
 
-    if (document.getElementById('environment')?.value !== 'testing') {
+    // if (document.getElementById('environment')?.value !== 'testing') {
         // Initialize the application
-        const app = new CraftingCalculator();
+        app = new CraftingCalculator();
         app.initialize();
-    }
+    // }
 
 });
 
@@ -50,12 +53,16 @@ class CraftingCalculator {
         this.setupEventListeners();
 
         // Auto save every 10 seconds
-        setInterval(() => { this.autosave() }, 10000);
+        // If there is a queryString like ?disable_auto_save=true
+        if (window.location.search.includes('disable_auto_save=true') ||
+            document.getElementById('environment')?.value === 'testing'
+        ) {
+            console.log("Auto save is disabled.");
+        } else {
+            setInterval(() => {this.autosave()}, 10000);
 
-        // Restore the latest autosave if one is available
-        if(!this.tryRestoreLatestSave()) {
-            // Add a starter machine
-            this.addMachine();
+            // Restore the latest autosave if one is available
+            this.tryRestoreLatestSave()
         }
     }
 
@@ -327,10 +334,13 @@ class CraftingCalculator {
         // alert(`State "${stateName}" loaded successfully!`);
     }
 
-    newProject() {
-        // Confirm before clearing
-        if (!confirm('Create a new project? This will clear your current work.')) {
-            return;
+    newProject(askConfirmation = true, addStarterMachine = true) {
+
+        if (askConfirmation) {
+            // Confirm before clearing
+            if (!confirm('Create a new project? This will clear your current work.')) {
+                return;
+            }
         }
 
         // Clear the canvas
@@ -343,8 +353,12 @@ class CraftingCalculator {
         this.nextMachineId = 1;
         this.nextLinkId = 1;
 
-        // Add a starter machine
-        this.addMachine();
+        if (addStarterMachine) {
+            // Add a starter machine
+            this.addMachine();
+        }
+
+        return this
     }
 
     clearCanvas() {
@@ -413,6 +427,9 @@ class CraftingCalculator {
     
     // Apply a state object to the application
     applyStateObject(state) {
+
+        console.log("Applying state:", state);
+
         // Clear current state
         this.clearCanvas();
 
@@ -601,16 +618,8 @@ class CraftingCalculator {
         const exportName = prompt('Enter a name for this export:');
         if (!exportName || exportName.trim() === '') return; // User cancelled
 
-        // Create a data structure to store the state using our helper method
-        const state = this.createStateObject();
-
-        // Create the export object with metadata
-        const exportData = {
-            version: "1.0",
-            timestamp: new Date().toISOString(),
-            name: exportName,
-            data: state
-        };
+        // Get the state data
+        const exportData = this.getExportData(exportName);
 
         // Convert to JSON and create a Blob
         const jsonString = JSON.stringify(exportData, null, 2);
@@ -625,6 +634,20 @@ class CraftingCalculator {
         document.body.removeChild(downloadLink);
 
         console.log(`Exported "${exportName}" successfully!`);
+    }
+
+    // Get export data without downloading
+    getExportData(exportName) {
+        // Create a data structure to store the state using our helper method
+        const state = this.createStateObject();
+
+        // Create the export object with metadata
+        return {
+            version: "1.0",
+            timestamp: new Date().toISOString(),
+            name: exportName || "Test Export",
+            data: state
+        };
     }
 
     // Handle file import

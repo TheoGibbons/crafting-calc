@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Create a clean calculator instance for testing
     function createCalculator() {
-        return new CraftingCalculator();
+        return window.app.newProject(false, false)
     }
 
     // Sample test suite for basic functionality

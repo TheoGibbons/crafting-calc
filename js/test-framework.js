@@ -22,6 +22,8 @@ class TestFramework {
         this.passedTests = 0;
         this.resultsElement = document.getElementById('test-results');
         this.summaryElement = document.getElementById('summary');
+        this.visualizationIframe = document.getElementById('visualization-iframe');
+        this.visualizableTests = new Map(); // Store tests that can be visualized
     }
 
     /**
@@ -87,6 +89,13 @@ class TestFramework {
         nameElement.textContent = name;
         testElement.appendChild(nameElement);
 
+        // Add visualize button (initially hidden)
+        const visualizeButton = document.createElement('button');
+        visualizeButton.className = 'visualize-test-btn';
+        visualizeButton.textContent = 'Visualize';
+        visualizeButton.style.display = 'none';
+        testElement.appendChild(visualizeButton);
+
         const detailsElement = document.createElement('div');
         detailsElement.className = 'test-details';
         testElement.appendChild(detailsElement);
@@ -97,7 +106,26 @@ class TestFramework {
 
         // Run the test
         try {
+            // Check if the test function contains machine operations
+            const functionStr = callback.toString().toLowerCase();
+            const isVisualizable = functionStr.includes('addmachine') &&
+                                  (functionStr.includes('createlink') ||
+                                   functionStr.includes('addinputitem') ||
+                                   functionStr.includes('addoutputitem'));
+
+            // If this test creates machines/links, store it for visualization
+            if (isVisualizable) {
+                this.visualizableTests.set(testElement, callback);
+                visualizeButton.style.display = 'block';
+
+                // Add click event for visualization
+                visualizeButton.addEventListener('click', () => {
+                    this.visualizeTest(testElement, callback, name);
+                });
+            }
+
             const result = callback.call(this);
+
             if (result === false) {
                 this.fail(testElement, detailsElement, 'Test returned false');
             } else {
@@ -113,6 +141,83 @@ class TestFramework {
         }
 
         this.updateSummary();
+    }
+
+    /**
+     * Visualize a test in the iframe
+     * @param {HTMLElement} testElement - The test element
+     * @param {Function} callback - The test function to run
+     * @param {string} name - The test name
+     */
+    visualizeTest(testElement, callback, name) {
+        // Show or hide the iframe
+        if (this.visualizationIframe.style.display === 'block' &&
+            this.visualizationIframe.dataset.currentTest === name) {
+            // If already showing this test, just hide it
+            this.visualizationIframe.style.display = 'none';
+            const buttons = document.querySelectorAll('.visualize-test-btn');
+            buttons.forEach(btn => btn.textContent = 'Visualize');
+            return;
+        }
+
+        // Mark this as the current test being visualized
+        this.visualizationIframe.dataset.currentTest = name;
+
+        // Update all buttons
+        const buttons = document.querySelectorAll('.visualize-test-btn');
+        buttons.forEach(btn => {
+            if (btn.parentElement === testElement) {
+                btn.textContent = 'Hide Visualization';
+            } else {
+                btn.textContent = 'Visualize';
+            }
+        });
+
+        // Show iframe
+        this.visualizationIframe.style.display = 'block';
+
+        // Scroll to iframe
+        this.visualizationIframe.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Wait for iframe to be ready
+        this.waitForIframeLoad().then(() => {
+            // Run the test in a clean calculator
+            const iframeWindow = this.visualizationIframe.contentWindow;
+            const originalCreateCalculator = window.createCalculator;
+
+            try {
+
+                try {
+                    // Run the test to build the machines and links
+                    callback.call(this);
+                } catch (error) {}
+
+                // Get the current state of the application
+                const state = app.getExportData(name);
+
+                iframeWindow.app.applyStateObject(state.data);
+
+            } catch (error) {
+                console.error('Error visualizing test:', error);
+            } finally {
+                // Restore original createCalculator
+                window.createCalculator = originalCreateCalculator;
+            }
+        });
+    }
+
+    /**
+     * Wait for iframe to be fully loaded
+     */
+    waitForIframeLoad() {
+        return new Promise((resolve) => {
+            if (this.visualizationIframe.contentWindow &&
+                this.visualizationIframe.contentWindow.app) {
+                resolve();
+            } else {
+                this.visualizationIframe.onload = resolve;
+            }
+        });
     }
 
     /**
