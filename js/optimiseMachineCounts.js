@@ -201,6 +201,12 @@ CraftingCalculator.prototype.optimizeMachineCountsPromptUser = function (callbac
     // Show the modal
     modal.showModal();
 
+    // Add event listener for the cancel button
+    const cancelButton = modal.querySelector('button[value="cancel"]');
+    cancelButton.addEventListener('click', () => {
+        modal.close('cancel');
+    });
+
     // Handle dialog close
     modal.addEventListener('close', () => {
         if (modal.returnValue === 'confirm') {
