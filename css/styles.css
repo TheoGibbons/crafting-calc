@@ -451,4 +451,75 @@ button i {
     padding: 10px 16px;
 }
 
+/* Optimize Machine Count Modal */
+.optimize-modal {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+}
 
+.optimize-modal::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.optimize-modal h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.optimize-modal p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.modal-field {
+    margin-bottom: 15px;
+}
+
+.modal-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.modal-field select,
+.modal-field input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.modal-field select:focus,
+.modal-field input:focus {
+    border-color: #4285f4;
+    outline: none;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+
+.modal-buttons button {
+    min-width: 80px;
+}
+
+.modal-buttons button[value="confirm"] {
+    background-color: #4285f4;
+}
+
+.modal-buttons button[value="cancel"] {
+    background-color: #f1f1f1;
+    color: #333;
+}
+
+.modal-buttons button:hover {
+    opacity: 0.9;
+}

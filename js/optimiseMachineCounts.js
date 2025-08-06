@@ -34,23 +34,8 @@ CraftingCalculator.prototype.optimizeMachineCount3 = function (rootMachineId = n
     let tempProvisionalCounts = {};
     let processedMachineIds = [];
 
-    if (rootMachineId !== null && rootMachineCount !== null) {
-        // If root machine ID and count are provided, set the provisional count of the root machine
-        const rootMachine = this.machines.find(m => m.id === rootMachineId);
-        if (!rootMachine) {
-            alert(`Root machine with ID ${rootMachineId} not found`);
-            return;
-        }
-        tempProvisionalCounts[rootMachine.id] = rootMachineCount;
-        processedMachineIds.push(rootMachine.id);
-    }
-
     // List of machines without output links
-    // const outputMachines = this.machines.filter(m => !this.links.some(l => l.sourceId === m.id));
-
-    // Get list of machines ordered with
-    // And anything connected to the root machine first
-    const machines = this.optimizeMachineGetOrderedMachines(rootMachineId, processedMachineIds);
+    const outputMachines = this.machines.filter(m => !this.links.some(l => l.sourceId === m.id));
 
     const getRatioBetweenMachines = (source, target, item) => {
         const numberOfLinksFromSourceMachineCarryingThisItem = this.links.filter(l => l.source.id === source.id && l.item && l.item === item).length;
@@ -114,15 +99,20 @@ CraftingCalculator.prototype.optimizeMachineCount3 = function (rootMachineId = n
         processedMachineIds.push(machine.id);
     };
 
-    const upgradeProvisionalCountsToMachineCounts = (provisionalCounts) => {
+    const upgradeProvisionalCountsToMachineCounts = (provisionalCounts, rootMachineId = null, rootMachineCount = null) => {
 
         // Get the highest provisional count for generator machines in provisionalCounts
-        const generatorMachineIds = Object.keys(provisionalCounts).filter(mid => !this.links.filter(l => l.target.id == mid).length)
-        const maxProvisionalCount = Math.max(...generatorMachineIds.map(mid => provisionalCounts[mid] || 0));
+        let ratio
+        if (rootMachineId !== null && rootMachineCount !== null && rootMachineId in provisionalCounts) {
+            ratio = rootMachineCount / provisionalCounts[rootMachineId];
+        } else {
+            const generatorMachineIds = Object.keys(provisionalCounts).filter(mid => !this.links.filter(l => l.target.id == mid).length)
+            const maxProvisionalCount = Math.max(...generatorMachineIds.map(mid => provisionalCounts[mid] || 0));
+            ratio = 1 / maxProvisionalCount;
+        }
 
         // We now need to make the generator machine with the highest provisional count to equal 1
         // and then scale all other machines based on that ratio
-        const ratio = 1 / maxProvisionalCount;
         const that = this
         this.machines.forEach(m => {
             if (provisionalCounts[m.id]) {
@@ -135,11 +125,11 @@ CraftingCalculator.prototype.optimizeMachineCount3 = function (rootMachineId = n
     };
 
     // Start optimization
-    machines.forEach(machine => {
+    outputMachines.forEach(machine => {
         optimizeMachineAndDownstream(machine);
 
         if (Object.keys(tempProvisionalCounts).length) {
-            upgradeProvisionalCountsToMachineCounts(tempProvisionalCounts);
+            upgradeProvisionalCountsToMachineCounts(tempProvisionalCounts, rootMachineId, rootMachineCount);
         }
 
     });
@@ -149,15 +139,77 @@ CraftingCalculator.prototype.optimizeMachineCount3 = function (rootMachineId = n
 };
 
 CraftingCalculator.prototype.optimizeMachineCountsPromptUser = function (callback) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('optimize-machine-count-modal');
 
-    callback(this.machines.filter(m => m.name === 'Machine 1')[0].id, 1);
-    console.error("TODO");
-}
+    if (!modal) {
+        // Create the modal element
+        modal = document.createElement('dialog');
+        modal.id = 'optimize-machine-count-modal';
+        modal.className = 'optimize-modal';
 
-// Get list of machines ordered with
-// And anything connected to the root machine first
-CraftingCalculator.prototype.optimizeMachineGetOrderedMachines = function (rootMachineId, processedMachineIds) {
-    console.error("TODO");
-    // return this.machines
-    return this.machines.filter(m => !this.links.some(l => l.sourceId === m.id));
+        // Set modal content
+        modal.innerHTML = `
+            <form method="dialog">
+                <h3>Optimize Machine Counts</h3>
+                <p>Set one machine's count to a specific value.<br>
+                   I will calculate the optimal count of all other machines to maximize the output.</p>
+                
+                <div class="modal-field">
+                    <label for="optimize-machine-select">Select a machine:</label>
+                    <select id="optimize-machine-select" required>
+                        <option value="">-- Select Machine --</option>
+                    </select>
+                </div>
+                
+                <div class="modal-field">
+                    <label for="optimize-machine-count">How many of this machine should there be:</label>
+                    <input type="number" id="optimize-machine-count" step="0.01" value="1" min="0.01" required>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" value="cancel">Cancel</button>
+                    <button value="confirm" id="optimize-confirm-btn">Calculate</button>
+                </div>
+            </form>
+        `;
+
+        // Add modal to the document
+        document.body.appendChild(modal);
+    }
+
+    // Get select element and populate with machines
+    const selectElement = document.getElementById('optimize-machine-select');
+    // Clear existing options (except the first one)
+    while (selectElement.options.length > 1) {
+        selectElement.remove(1);
+    }
+
+    // Add all machines to the dropdown
+    this.machines.forEach(machine => {
+        const isThereAnotherMachineWithTheSameName = this.machines.some(m => m.id !== machine.id && m.name === machine.name);
+        const option = document.createElement('option');
+        option.value = machine.id;
+        option.textContent = machine.name + (isThereAnotherMachineWithTheSameName ? ` (ID: ${machine.id})` : '');
+        selectElement.appendChild(option);
+    });
+
+    // Set up the count input
+    const countInput = document.getElementById('optimize-machine-count');
+    countInput.value = 1;
+
+    // Show the modal
+    modal.showModal();
+
+    // Handle dialog close
+    modal.addEventListener('close', () => {
+        if (modal.returnValue === 'confirm') {
+            const selectedMachineId = parseInt(selectElement.value, 10);
+            const machineCount = parseFloat(countInput.value);
+
+            if (selectedMachineId && !isNaN(machineCount) && machineCount > 0) {
+                callback(selectedMachineId, machineCount);
+            }
+        }
+    }, {once: true}); // Use once: true to prevent multiple event handlers
 }
