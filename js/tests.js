@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function () {
             calculator.addOutputItem(machine1, 'item1', 1000);
             calculator.addInputItem(machine2, 'item1', 100);
 
-            calculator.optimizeMachineCount()
+            calculator.optimizeMachineCount3()
 
             assertEqual(machine2.count, 10, 'Machine 2 should have count of 10');
 
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
             calculator.addInputItem(machine3, 'item1', 100);
             calculator.addInputItem(machine3, 'item2', 100);
 
-            calculator.optimizeMachineCount()
+            calculator.optimizeMachineCount3()
 
             assertEqual(machine3.count, 2, 'Machine 2 should have count of 2');
 
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
             calculator.addInputItem(machine5, 'item4', 80);
             calculator.addOutputItem(machine5, 'item3', 100);
 
-            calculator.optimizeMachineCount()
+            calculator.optimizeMachineCount3()
 
             assertEqual(generator1.count, 0.5, 'Generator 1 should have count of 0.5');
             assertEqual(generator2.count, 1, 'Generator 2 should have count of 1');
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
             calculator.addInputItem(machine4, 'Iron Plate', 50);
             calculator.addInputItem(machine4, 'Iron Rod', 25);
 
-            calculator.optimizeMachineCount()
+            calculator.optimizeMachineCount3()
 
             assertEqual(machine1.count, 1, 'Machine 1 should have count of 1');
             assertEqual(machine2.count.toFixed(1), 2.66.toFixed(1), 'Machine 2 should have count of 2.66');
