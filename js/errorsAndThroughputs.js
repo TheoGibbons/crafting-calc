@@ -323,12 +323,12 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             errorIcon.style.display = '';
             errorIcon.title = link.errorMessages.join("\n");
         } else {
-            itemThroughput.textContent = `${link.currentThroughput} items/min`;
+            itemThroughput.textContent = `${link.currentThroughput.toFixed(2)} items/min`;
             infoIcon.style.display = '';
             infoIcon.style.background = this.percentageToColor(link.efficiency);
             infoIcon.title = `Max throughput: ${link.throughput === null ? 'Not set' : link.throughput + ' items/s'}\n` +
-                `Current throughput: ${link.currentThroughput} items/s\n` +
-                (link.currentThroughput !== link.attemptedThroughput ? `!!! Input: ${link.attemptedThroughput} items/s\n` : '') +
+                `Current throughput: ${link.currentThroughput.toFixed(2)} items/s\n` +
+                (link.currentThroughput.toFixed(2) !== link.attemptedThroughput.toFixed(2) ? `!!! Input: ${link.attemptedThroughput} items/s\n` : '') +
                 `Efficiency: ${(link.efficiency * 100).toFixed(0)}%`;
         }
     })
@@ -398,7 +398,7 @@ CraftingCalculator.prototype.optimizeMachineCount = function () {
     let processedMachineIds = [];
 
 
-    const getRationBetweenMachines = (source, target, item) => {
+    const getRatioBetweenMachines = (source, target, item) => {
         const numberOfLinksFromSourceMachineCarryingThisItem = this.links.filter(l => l.source.id === source.id && l.item && l.item === item).length;
         const machineOutputRateOfThisLink = source.outputItems[item].rate / numberOfLinksFromSourceMachineCarryingThisItem;
 
@@ -420,20 +420,22 @@ CraftingCalculator.prototype.optimizeMachineCount = function () {
 
         outputLinks.forEach(l => {
             if (typeof tempProvisionalCounts[l.target.id] !== 'undefined') {
-                const ratioBetweenSourceAndDestinationMachines = getRationBetweenMachines(l.source, l.target, l.item);
+                const ratioBetweenSourceAndDestinationMachines = getRatioBetweenMachines(machine, l.target, l.item);
                 ratioedCountOfConnectedMachines.push(tempProvisionalCounts[l.target.id] * ratioBetweenSourceAndDestinationMachines);
             }
         })
 
         inputLinks.forEach(l => {
             if (typeof tempProvisionalCounts[l.source.id] !== 'undefined') {
-                const ratioBetweenSourceAndDestinationMachines = 1 / getRationBetweenMachines(l.source, l.target, l.item);
+                const ratioBetweenSourceAndDestinationMachines = 1 / getRatioBetweenMachines(l.source, machine, l.item);
                 ratioedCountOfConnectedMachines.push(tempProvisionalCounts[l.source.id] / ratioBetweenSourceAndDestinationMachines);
             }
         })
 
         if (ratioedCountOfConnectedMachines.length > 0) {
-            return Math.min(...ratioedCountOfConnectedMachines);
+            // Using average instead of min to better balance converging production lines
+            const sum = ratioedCountOfConnectedMachines.reduce((acc, val) => acc + val, 0);
+            return sum / ratioedCountOfConnectedMachines.length;
         }
 
         // No connected machine has a provisional count
@@ -470,7 +472,7 @@ CraftingCalculator.prototype.optimizeMachineCount = function () {
         const that = this
         this.machines.forEach(m => {
             if (provisionalCounts[m.id]) {
-                that.setMachineCount(m, provisionalCounts[m.id] * ratio);
+                that.setMachineCount(m, parseFloat((provisionalCounts[m.id] * ratio).toFixed(2)));
             }
         });
 
