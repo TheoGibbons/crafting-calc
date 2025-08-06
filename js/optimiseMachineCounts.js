@@ -15,16 +15,16 @@ CraftingCalculator.prototype.optimizeMachineCountErrorCheck = function () {
     return false;
 }
 
-CraftingCalculator.prototype.optimizeMachineCount = function () {
+CraftingCalculator.prototype.optimizeMachineCountWithPromptModal = function () {
 
     if (this.optimizeMachineCountErrorCheck()) {
         return;
     }
 
-    this.optimizeMachineCountsPromptUser(this.optimizeMachineCount3.bind(this));
+    this.optimizeMachineCountsPromptUser(this.optimizeMachineCount.bind(this));
 }
 
-CraftingCalculator.prototype.optimizeMachineCount3 = function (rootMachineId = null, rootMachineCount = null) {
+CraftingCalculator.prototype.optimizeMachineCount = function (rootMachineId = null, rootMachineCount = null) {
 
     if (this.optimizeMachineCountErrorCheck()) {
         return;

@@ -79,7 +79,7 @@ class CraftingCalculator {
         this.exportBtn.addEventListener('click', () => this.exportState());
         this.importBtn.addEventListener('click', () => this.importFile.click());
         this.importFile.addEventListener('change', (e) => this.handleImportFile(e));
-        this.optimizeMachinesBtn.addEventListener('click', () => this.optimizeMachineCount());
+        this.optimizeMachinesBtn.addEventListener('click', () => this.optimizeMachineCountWithPromptModal());
 
         // Pan functionality
         this.canvasContainer.addEventListener('mousedown', (e) => this.handleCanvasMouseDown(e));
