@@ -52,6 +52,9 @@ class CraftingCalculator {
         // Add event listeners
         this.setupEventListeners();
 
+        // Initialize factory output panel
+        this.initializeFactoryOutputPanel();
+
         // Auto save every 10 seconds
         // If there is a queryString like ?disable_auto_save=true
         if (window.location.search.includes('disable_auto_save=true') ||
@@ -605,6 +608,107 @@ class CraftingCalculator {
 
         // Update machine status colors
         this.updateMachineStatuses();
+    }
+
+    // Factory Output Panel functionality
+    initializeFactoryOutputPanel() {
+        // Get panel and button elements
+        this.factoryOutputPanel = document.getElementById('factory-output-panel');
+        this.toggleFactoryOutputBtn = document.getElementById('toggle-factory-output-btn');
+        this.closeFactoryOutputBtn = document.getElementById('close-factory-output-btn');
+        this.factoryOutputContent = document.getElementById('factory-output-content');
+
+        // Add event listeners
+        this.toggleFactoryOutputBtn.addEventListener('click', () => this.toggleFactoryOutputPanel());
+        this.closeFactoryOutputBtn.addEventListener('click', () => this.hideFactoryOutputPanel());
+
+        // // Add update factory output to machine status updates
+        // const originalUpdateMachineStatuses = this.updateMachineStatuses;
+        // this.updateMachineStatuses = () => {
+        //     originalUpdateMachineStatuses.call(this);
+        //     this.updateFactoryOutputPanel();
+        // };
+    }
+
+    toggleFactoryOutputPanel() {
+        if (this.factoryOutputPanel.classList.contains('hidden')) {
+            this.showFactoryOutputPanel();
+        } else {
+            this.hideFactoryOutputPanel();
+        }
+    }
+
+    showFactoryOutputPanel() {
+        this.factoryOutputPanel.classList.remove('hidden');
+        this.toggleFactoryOutputBtn.style.display = 'none';
+        // this.updateFactoryOutputPanel();
+    }
+
+    hideFactoryOutputPanel() {
+        this.factoryOutputPanel.classList.add('hidden');
+        this.toggleFactoryOutputBtn.style.display = 'block';
+    }
+
+    updateFactoryOutputPanel() {
+        // if (this.factoryOutputPanel.classList.contains('hidden')) {
+        //     return; // Don't update if panel is hidden
+        // }
+
+        // Clear the content
+        this.factoryOutputContent.innerHTML = '';
+
+        // Calculate the net output of the factory
+        const factoryOutputs = this.calculateFactoryOutputs();
+
+        if (Object.keys(factoryOutputs).length === 0) {
+            // No outputs, show a message
+            const noOutputsMsg = document.createElement('div');
+            noOutputsMsg.classList.add('no-outputs');
+            noOutputsMsg.textContent = 'No factory outputs detected. Add machines and links to see outputs.';
+            this.factoryOutputContent.appendChild(noOutputsMsg);
+            return;
+        }
+
+        // Sort outputs by item name
+        const sortedOutputs = Object.entries(factoryOutputs).sort((a, b) => a[0].localeCompare(b[0]));
+
+        // Add each output to the panel
+        sortedOutputs.forEach(([item, rate]) => {
+            const outputItem = document.createElement('div');
+            outputItem.classList.add('output-item');
+
+            const itemName = document.createElement('div');
+            itemName.classList.add('output-item-name');
+            itemName.textContent = item;
+
+            const outputRate = document.createElement('div');
+            outputRate.classList.add('output-rate');
+            outputRate.textContent = `${rate.toFixed(2)} items/s`;
+
+            outputItem.appendChild(itemName);
+            outputItem.appendChild(outputRate);
+            this.factoryOutputContent.appendChild(outputItem);
+        });
+    }
+
+    calculateFactoryOutputs() {
+        const outputs = {};
+
+        // First identify terminal machines (machines with no output links)
+        const terminalMachines = this.machines.filter(machine =>
+            !this.links.some(link => link.source.id === machine.id)
+        );
+
+        // Add up all outputs from terminal machines
+        terminalMachines.forEach(machine => {
+            Object.entries(machine.outputItems).forEach(([item, output]) => {
+                if (output.currentThroughput) {
+                    outputs[item] = (outputs[item] || 0) + output.currentThroughput;
+                }
+            });
+        });
+
+        return outputs;
     }
 
     // Export the current state to a file
