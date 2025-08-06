@@ -664,7 +664,7 @@ class CraftingCalculator {
             // No outputs, show a message
             const noOutputsMsg = document.createElement('div');
             noOutputsMsg.classList.add('no-outputs');
-            noOutputsMsg.textContent = 'No factory outputs detected. Add machines and links to see outputs.';
+            noOutputsMsg.textContent = 'No factory outputs detected.';
             this.factoryOutputContent.appendChild(noOutputsMsg);
             return;
         }
