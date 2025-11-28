@@ -277,8 +277,8 @@ button i {
     display: flex;
     flex-direction: row !important;
     gap: 3px;
-    align-items: flex-start;
     width: 100%;
+    align-items: center;
 }
 
 .input-delete-button,
