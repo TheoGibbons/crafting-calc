@@ -264,6 +264,12 @@ button i {
     align-items: center;
     margin: 3px 0;
     flex-direction: row;
+    border-radius: 3px;
+}
+
+.input-item-row:hover,
+.output-item-row:hover {
+    background-color: #ebebeb;
 }
 
 .input-item-details,
