@@ -67,9 +67,9 @@ body {
     display: flex;
     flex-direction: column;
     padding: 5px;
-    font-size: 12px;
-    overflow: hidden;
     gap: 10px;
+    overflow: auto;
+    font-size: 8px;
 }
 
 .context-menu {
@@ -271,6 +271,7 @@ button i {
     display: flex;
     flex-direction: row !important;
     gap: 3px;
+    align-items: flex-start;
 }
 
 .input-delete-button,
