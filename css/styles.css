@@ -272,6 +272,7 @@ button i {
     flex-direction: row !important;
     gap: 3px;
     align-items: flex-start;
+    width: 100%;
 }
 
 .input-delete-button,
@@ -523,4 +524,9 @@ button i {
 
 .modal-buttons button:hover {
     opacity: 0.9;
+}
+
+.input-item-name,
+.output-item-name {
+    flex-grow: 1;
 }
