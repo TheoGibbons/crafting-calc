@@ -370,11 +370,6 @@ button i {
     gap: 5px;
 }
 
-.efficiency {
-    font-size: 11px;
-    vertical-align: middle;
-    margin-left: 5px;
-}
 
 /* Factory Output Panel */
 .factory-output-panel {

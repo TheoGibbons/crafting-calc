@@ -10,9 +10,6 @@ CraftingCalculator.prototype.addMachine = function() {
     machine.style.left = `${-this.panX/this.scale + window.innerWidth/(2*this.scale) - 100}px`;
     machine.style.top = `${-this.panY/this.scale + window.innerHeight/(2*this.scale) - 100}px`;
 
-    const efficiency = document.createElement('span');
-    efficiency.className = 'efficiency';
-
     const headerName = document.createElement('span');
     headerName.className = 'machine-header-name';
     headerName.textContent = name;
@@ -21,7 +18,6 @@ CraftingCalculator.prototype.addMachine = function() {
     const header = document.createElement('div');
     header.className = 'machine-header';
     header.appendChild(headerName);
-    header.appendChild(efficiency);
     header.title = "Click to rename";
 
     // Add click to rename

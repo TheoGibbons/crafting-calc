@@ -244,11 +244,37 @@ CraftingCalculator.prototype.percentageToColor = function (percentage) {
 CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function () {
 
     this.machines.forEach(m => {
-        // Input items
-        const efficiencyElem = m.element.querySelector('.efficiency')
-        efficiencyElem.textContent = (m.efficiency * 100).toFixed(0) + '%';
-        efficiencyElem.style.color = this.percentageToColor(m.efficiency);
-        efficiencyElem.title = `Machine running at ${(m.efficiency * 100).toFixed(0)}% capacity`;
+        const header = m.element.querySelector('.machine-header');
+        const ratesElem = m.element.querySelector('.machine-rates');
+        const inputsContainer = m.element.querySelector('.inputs-container');
+        const outputsContainer = m.element.querySelector('.outputs-container');
+
+        // Determine if machine has any inputs configured
+        const hasInputs = Object.keys(m.inputItems || {}).length > 0;
+        // Determine if machine has any output links configured
+        const hasOutputsLink = this.links.some(link => link.source.id === m.id);
+
+        // Clear previous backgrounds on containers and rates area
+        if (ratesElem) ratesElem.style.background = '';
+        if (inputsContainer) inputsContainer.style.background = '';
+        if (outputsContainer) outputsContainer.style.background = '';
+
+        // Highlight containers based on missing connections
+        // If there are no output links, highlight outputs container
+        if (!hasOutputsLink && outputsContainer) {
+            outputsContainer.style.background = '#f0f7ff';
+        }
+        // If there are no inputs configured, highlight inputs container
+        if (!hasInputs && inputsContainer) {
+            inputsContainer.style.background = '#f1fff4';
+        }
+
+        // Header background and tooltip based on efficiency
+        if (header) {
+            const percentage = (m.efficiency * 100).toFixed(0);
+            header.style.background = percentage === '100' ? '' : this.percentageToColor(m.efficiency);
+            header.title = `Machine running at ${percentage}% capacity`;
+        }
 
         // Input items
         m.element.querySelectorAll('.input-item-row').forEach(row => {
