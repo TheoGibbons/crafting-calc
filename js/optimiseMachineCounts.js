@@ -146,7 +146,7 @@ CraftingCalculator.prototype.optimizeMachineCountsPromptUser = function (callbac
         // Create the modal element
         modal = document.createElement('dialog');
         modal.id = 'optimize-machine-count-modal';
-        modal.className = 'optimize-modal';
+        modal.className = 'my-modal';
 
         // Set modal content
         modal.innerHTML = `

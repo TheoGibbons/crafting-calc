@@ -159,20 +159,18 @@ button {
     border: none;
     border-radius: 4px;
     margin-right: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 button:hover {
     background: #3367d6;
 }
 
-/* Add Machine button at bottom right */
-.bottom-right-btn {
+.bottom-right {
     position: absolute;
     bottom: 20px;
     right: 20px;
     z-index: 100;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    padding: 10px 16px;
 }
 
 /* Optimize Machine Count button at bottom left */
@@ -460,7 +458,7 @@ button i {
 }
 
 /* Optimize Machine Count Modal */
-.optimize-modal {
+.my-modal {
     border: none;
     border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -469,16 +467,16 @@ button i {
     width: 100%;
 }
 
-.optimize-modal::backdrop {
+.my-modal::backdrop {
     background: rgba(0, 0, 0, 0.5);
 }
 
-.optimize-modal h3 {
+.my-modal h3 {
     margin-top: 0;
     color: #333;
 }
 
-.optimize-modal p {
+.my-modal p {
     color: #666;
     margin-bottom: 20px;
 }
