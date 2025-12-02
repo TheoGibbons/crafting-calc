@@ -145,8 +145,8 @@ class CraftingCalculator {
         const canvasY = (mouseY - this.panY) / this.scale;
 
         // Adjust scale with wheel delta
-        const delta = -Math.sign(e.deltaY) * 0.1;
-        const newScale = Math.max(0.5, Math.min(3, this.scale + delta));
+        const delta = -Math.sign(e.deltaY) * 0.05;
+        const newScale = Math.max(0.1, Math.min(3, this.scale + delta));
 
         // If scale hasn't changed, don't do anything
         if (newScale === this.scale) return;
