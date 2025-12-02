@@ -529,3 +529,7 @@ button i {
 .output-item-name {
     flex-grow: 1;
 }
+
+#machine-color-input {
+    height: 48px;
+}
