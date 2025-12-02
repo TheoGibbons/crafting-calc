@@ -232,6 +232,7 @@ CraftingCalculator.prototype.handleMachineContextMenu = function(e, machineEleme
     // Add menu items
     const menuItems = [
         { text: 'Add Link', action: () => this.startLinkCreation(machine) },
+        { text: 'Set colour', action: () => this.promptSetMachineColor(machine) },
         { text: 'Delete', action: () => this.deleteMachine(machine) }
     ];
 
@@ -301,3 +302,86 @@ CraftingCalculator.prototype.deleteMachine = function(machine) {
         this.machines.splice(machineIdx, 1);
     }
 };
+
+CraftingCalculator.prototype.promptSetMachineColor = function (machine) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('machine-color-modal');
+
+    if (!modal) {
+        // Create the modal element
+        modal = document.createElement('dialog');
+        modal.id = 'machine-color-modal';
+        modal.className = 'my-modal';
+
+        // Set modal content
+        modal.innerHTML = `
+            <form method="dialog">
+                <h3>Set Machine Colour</h3>
+                <p>Select a colour for this machine.</p>
+
+                <div class="modal-field">
+                    <label for="machine-color-input">Colour:</label>
+                    <input type="color" id="machine-color-input" value="#ffffff">
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" value="cancel">Cancel</button>
+                    <button value="confirm" id="machine-color-confirm-btn">Apply</button>
+                </div>
+            </form>
+        `;
+
+        // Add modal to the document
+        document.body.appendChild(modal);
+
+        // Add event listener for the cancel button (only once on creation)
+        const cancelButton = modal.querySelector('button[value="cancel"]');
+        cancelButton.addEventListener('click', () => {
+            modal.close('cancel');
+        });
+    }
+
+    const colorInput = document.getElementById('machine-color-input');
+
+    // Initialize the color input with the current machine color if set, otherwise a default
+    let currentColor = '#ffffff';
+
+    // Try to reuse any previously stored color on the machine object first
+    if (machine.color) {
+        currentColor = machine.color;
+    } else {
+        // Fallback: if the element already has an inline background color in hex format
+        const styleColor = machine.element.style.backgroundColor;
+        if (styleColor) {
+            // Best-effort: browser may return rgb(), so we only accept hex-looking values
+            const hexMatch = styleColor.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+            if (hexMatch) {
+                currentColor = styleColor;
+            }
+        }
+    }
+
+    // Ensure value is a valid hex color for the input[type=color]
+    if (!/^#([0-9a-fA-F]{6})$/.test(currentColor)) {
+        currentColor = '#ffffff';
+    }
+
+    colorInput.value = currentColor;
+
+    // Show the modal
+    modal.showModal();
+
+    // Handle dialog close for this specific invocation
+    const currentMachine = machine;
+    modal.addEventListener('close', () => {
+        if (modal.returnValue === 'confirm') {
+            const selectedColor = colorInput.value;
+            if (selectedColor && /^#([0-9a-fA-F]{6})$/.test(selectedColor)) {
+                // Apply color to the machine element and store it on the machine object
+                currentMachine.element.style.backgroundColor = selectedColor;
+                currentMachine.color = selectedColor;
+            }
+        }
+    }, { once: true });
+};
+

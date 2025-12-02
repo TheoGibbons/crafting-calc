@@ -422,7 +422,9 @@ class CraftingCalculator {
                 inputItems: {...machine.inputItems},
                 outputItems: {...machine.outputItems},
                 inputs: [...machine.inputs],
-                outputs: [...machine.outputs]
+                outputs: [...machine.outputs],
+                // Persist optional machine colour
+                color: machine.color || null
             })),
             links: this.links.map(link => ({
                 id: link.id,
@@ -466,6 +468,11 @@ class CraftingCalculator {
             machine.dataset.id = machineData.id;
             machine.style.left = `${machineData.left}px`;
             machine.style.top = `${machineData.top}px`;
+
+            // Restore saved colour if present
+            if (machineData.color) {
+                machine.style.backgroundColor = machineData.color;
+            }
 
             const efficiency = document.createElement('span');
             efficiency.className = 'efficiency';
@@ -527,7 +534,9 @@ class CraftingCalculator {
                 inputs: [...machineData.inputs],
                 outputs: [...machineData.outputs],
                 inputItems: {...machineData.inputItems},
-                outputItems: {...machineData.outputItems}
+                outputItems: {...machineData.outputItems},
+                // Keep colour on machine object as well
+                color: machineData.color || null
             };
 
             this.machines.push(machineObj);
@@ -1022,6 +1031,11 @@ class CraftingCalculator {
             machine.style.left = `${(srcMachine.left || 0) + offsetX}px`;
             machine.style.top = `${(srcMachine.top || 0) + offsetY}px`;
 
+            // Restore colour for imported machines if present
+            if (srcMachine.color) {
+                machine.style.backgroundColor = srcMachine.color;
+            }
+
             const efficiency = document.createElement('span');
             efficiency.className = 'efficiency';
 
@@ -1073,7 +1087,9 @@ class CraftingCalculator {
                 inputs: [...(srcMachine.inputs || [])],
                 outputs: [...(srcMachine.outputs || [])],
                 inputItems: {...(srcMachine.inputItems || {})},
-                outputItems: {...(srcMachine.outputItems || {})}
+                outputItems: {...(srcMachine.outputItems || {})},
+                // Preserve colour in imported machine object
+                color: srcMachine.color || null
             };
 
             this.machines.push(machineObj);
