@@ -214,11 +214,10 @@ class CraftingCalculator {
     autosave() {
         if(this.machines.length === 0) return;
 
-        const formatDateTime = function (date) {
-            const pad = n => n.toString().padStart(2, '0');
-            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-        }
-        const autoSaveName = `autosave-${formatDateTime(new Date())}-${this.machines.length} machines`;
+        const factoryOutput = this.calculateFactoryOutputs();
+        const factoryOutputStr = Object.keys(factoryOutput).join(', ').substring(0, 35);
+
+        const autoSaveName = `autosave-${this.machines.length} machines-[${factoryOutputStr}]`;
 
         this.saveState(autoSaveName)
     }
@@ -308,14 +307,20 @@ class CraftingCalculator {
             this.loadDropdown.remove(1);
         }
 
+        const entries = Object.entries(savedStates)
+
+        entries.sort((a, b) =>
+            Math.sign((new Date(b[1].timestamp)).getTime() - (new Date(a[1].timestamp)).getTime())
+        );
+
         // Add each saved state to the dropdown
-        Object.entries(savedStates).forEach(([name, stateData]) => {
+        entries.forEach(([name, stateData]) => {
             const option = document.createElement('option');
             option.value = name;
 
             // Format the date for display
             const date = new Date(stateData.timestamp);
-            const formattedDate = date.toLocaleString();
+            const formattedDate = date.toLocaleString("en-NZ");
 
             option.textContent = `${name} (${formattedDate})`;
             this.loadDropdown.appendChild(option);
