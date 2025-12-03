@@ -186,11 +186,30 @@ CraftingCalculator.prototype.optimizeMachineCountsPromptUser = function (callbac
     }
 
     // Add all machines to the dropdown
-    this.machines.forEach(machine => {
+    const machinesToDropDown = this.machines.slice().sort((a, b) => a.name.localeCompare(b.name));
+    machinesToDropDown.forEach(machine => {
         const isThereAnotherMachineWithTheSameName = this.machines.some(m => m.id !== machine.id && m.name === machine.name);
         const option = document.createElement('option');
         option.value = machine.id;
-        option.textContent = machine.name + (isThereAnotherMachineWithTheSameName ? ` (ID: ${machine.id})` : '');
+
+        const textContentIn = Object.keys(machine.inputItems).join(', ')
+        const textContentOut = Object.keys(machine.outputItems).join(', ')
+        let textContentInOut = '';
+
+        if (textContentIn || textContentOut) {
+            textContentInOut =
+                ' |' +
+                (
+                    [textContentIn ? `In: [${textContentIn}]` : '', textContentOut ? `Out: [${textContentOut}]` : '']
+                        .filter(s => !!s)
+                        .join('|')
+                ) +
+                '|'
+            ;
+        }
+
+        const textContent = machine.name + (isThereAnotherMachineWithTheSameName ? ` (ID: ${machine.id})` : '');
+        option.textContent = textContent + textContentInOut;
         selectElement.appendChild(option);
     });
 
