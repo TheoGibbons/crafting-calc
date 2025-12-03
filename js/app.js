@@ -227,7 +227,8 @@ class CraftingCalculator {
 
         while (!stateName) {
             // Prompt for a name for this saved state
-            stateName = prompt('Enter a name for this saved state:');
+            const defaultName = Object.keys(this.calculateFactoryOutputs()).join(', ');
+            stateName = prompt('Enter a name for this saved state:', defaultName);
 
             if(stateName === null) return; // User cancelled
 
