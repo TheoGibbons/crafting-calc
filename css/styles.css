@@ -21,6 +21,33 @@ body {
     transform-origin: 0 0;
 }
 
+/* Centered factory IO wrapper */
+.factory-io-wrapper {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    z-index: 110; /* above panels and buttons that are at 100 */
+    align-items: center;
+}
+
+.factory-io-column {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+/* In small viewports, stack input over output */
+@media (max-width: 768px) {
+    .factory-io-wrapper {
+        flex-direction: column;
+    }
+}
+
 .machine {
     position: absolute;
     width: 200px;
@@ -373,12 +400,12 @@ button i {
 
 /* Factory Output Panel */
 .factory-output-panel {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    /* inside the centered wrapper we don't need absolute right/top */
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
     width: 250px;
-    max-height: 400px;
     background: white;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -388,6 +415,7 @@ button i {
     flex-direction: column;
     overflow: hidden;
     transition: all 0.3s ease;
+    max-height: calc(100vh - 110px);
 }
 
 .factory-output-panel.hidden {
@@ -422,7 +450,6 @@ button i {
 .factory-output-content {
     padding: 10px;
     overflow-y: auto;
-    max-height: 350px;
 }
 
 .output-item {
@@ -443,10 +470,11 @@ button i {
 
 /* Middle-right toggle button */
 .middle-right-btn {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
+    /* no longer absolutely positioned on the right edge when inside wrapper */
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
     z-index: 100;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     padding: 10px 16px;
@@ -454,12 +482,12 @@ button i {
 
 /* Factory Input Panel */
 .factory-input-panel {
-    position: absolute;
-    right: 280px; /* offset from output panel */
-    top: 50%;
-    transform: translateY(-50%);
+    /* relative inside column instead of fixed right offset */
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
     width: 250px;
-    max-height: 400px;
     background: white;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -469,6 +497,7 @@ button i {
     flex-direction: column;
     overflow: hidden;
     transition: all 0.3s ease;
+    max-height: calc(100vh - 110px);
 }
 
 .factory-input-panel.hidden {
@@ -503,7 +532,6 @@ button i {
 .factory-input-panel .factory-input-content {
     padding: 10px;
     overflow-y: auto;
-    max-height: 350px;
 }
 
 .factory-input-panel .input-machine-block {
@@ -549,7 +577,7 @@ button i {
 
 /* Factory Input toggle button - slightly above output toggle */
 .middle-right-input-btn {
-    top: 40%;
+    top: auto;
 }
 
 .factory-input-output-text {

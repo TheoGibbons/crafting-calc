@@ -38,6 +38,46 @@
         </select>
     </div>
 
+    <!-- Optimize Machine Count button at bottom left -->
+    <button id="optimize-machines-btn" class="bottom-left-btn"><i class="fas fa-balance-scale"></i> Optimise Machine Counts</button>
+
+    <!-- Factory IO Wrapper: vertically centered, input on the left, output on the right -->
+    <div class="factory-io-wrapper">
+        <!-- Input Column -->
+        <div class="factory-io-column factory-io-column-input">
+            <!-- Factory Input Toggle Button -->
+            <button id="toggle-factory-input-btn" class="middle-right-btn middle-right-input-btn"><i class="fas fa-arrow-right-to-bracket"></i> <span class="factory-input-output-text">In</span></button>
+
+            <!-- Factory Input Panel -->
+            <div id="factory-input-panel" class="factory-input-panel hidden">
+                <div class="factory-input-header">
+                    <h3>Factory Inputs</h3>
+                    <button id="close-factory-input-btn"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="factory-input-content" class="factory-input-content">
+                    <!-- Input items will be dynamically populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Column -->
+        <div class="factory-io-column factory-io-column-output">
+            <!-- Factory Output Toggle Button -->
+            <button id="toggle-factory-output-btn" class="middle-right-btn"><i class="fas fa-arrow-right-from-bracket"></i> <span class="factory-input-output-text">Out</span></button>
+
+            <!-- Factory Output Panel -->
+            <div id="factory-output-panel" class="factory-output-panel hidden">
+                <div class="factory-output-header">
+                    <h3>Factory Outputs</h3>
+                    <button id="close-factory-output-btn"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="factory-output-content" class="factory-output-content">
+                    <!-- Output items will be dynamically populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="bottom-right">
         <!-- Add Machine button moved to bottom right -->
         <button id="import-save-btn"><i class="fa-solid fa-arrows-to-circle"></i> Import Another Save</button>
@@ -45,37 +85,6 @@
         <!-- Add Machine button moved to bottom right -->
         <button id="add-machine-btn"><i class="fas fa-plus-circle"></i> Add Machine</button>
     </div>
-
-    <!-- Optimize Machine Count button at bottom left -->
-    <button id="optimize-machines-btn" class="bottom-left-btn"><i class="fas fa-balance-scale"></i> Optimise Machine Counts</button>
-
-    <!-- Factory Output Panel -->
-    <div id="factory-output-panel" class="factory-output-panel hidden">
-        <div class="factory-output-header">
-            <h3>Factory Outputs</h3>
-            <button id="close-factory-output-btn"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="factory-output-content" class="factory-output-content">
-            <!-- Output items will be dynamically populated here -->
-        </div>
-    </div>
-
-    <!-- Factory Input Panel -->
-    <div id="factory-input-panel" class="factory-input-panel hidden">
-        <div class="factory-input-header">
-            <h3>Factory Inputs</h3>
-            <button id="close-factory-input-btn"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="factory-input-content" class="factory-input-content">
-            <!-- Input items will be dynamically populated here -->
-        </div>
-    </div>
-
-    <!-- Factory Output Toggle Button -->
-    <button id="toggle-factory-output-btn" class="middle-right-btn"><i class="fas fa-arrow-right-from-bracket"></i> <span class="factory-input-output-text">Out</span></button>
-
-    <!-- Factory Input Toggle Button -->
-    <button id="toggle-factory-input-btn" class="middle-right-btn middle-right-input-btn"><i class="fas fa-arrow-right-to-bracket"></i> <span class="factory-input-output-text">In</span></button>
 
     <!-- JavaScript files -->
     <script src="js/app.js"></script>
