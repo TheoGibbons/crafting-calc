@@ -776,6 +776,7 @@ class CraftingCalculator {
 
         machineIds
             .map(id => inputMachines[id])
+            .sort((a, b) => a.items.map(i => i.item).join(', ').localeCompare(b.items.map(i => i.item).join(', ')))
             .forEach(machineInfo => {
                 const block = document.createElement('div');
                 block.classList.add('input-machine-block');
