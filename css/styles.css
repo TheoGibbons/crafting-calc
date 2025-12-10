@@ -452,6 +452,111 @@ button i {
     padding: 10px 16px;
 }
 
+/* Factory Input Panel */
+.factory-input-panel {
+    position: absolute;
+    right: 280px; /* offset from output panel */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 250px;
+    max-height: 400px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.factory-input-panel.hidden {
+    display: none;
+}
+
+.factory-input-panel .factory-input-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+}
+
+.factory-input-panel .factory-input-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.factory-input-panel .factory-input-header button {
+    background: transparent;
+    color: #555;
+    padding: 3px 6px;
+    margin: 0;
+}
+
+.factory-input-panel .factory-input-header button:hover {
+    background: #ddd;
+}
+
+.factory-input-panel .factory-input-content {
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 350px;
+}
+
+.factory-input-panel .input-machine-block {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.factory-input-panel .input-machine-block:last-child {
+    border-bottom: none;
+}
+
+.factory-input-panel .input-machine-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.factory-input-panel .input-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 2px 0;
+}
+
+.factory-input-panel .input-item-name {
+    font-weight: 500;
+}
+
+.factory-input-panel .input-item-source {
+    color: #666;
+    margin-left: 6px;
+}
+
+.factory-input-panel .input-rate {
+    font-weight: bold;
+    color: #0b8043;
+}
+
+.factory-input-panel .no-inputs {
+    font-style: italic;
+    color: #777;
+}
+
+/* Factory Input toggle button - slightly above output toggle */
+.middle-right-input-btn {
+    top: 40%;
+}
+
+.factory-input-output-text {
+    width: 1.25em;
+    display: inline-block;
+}
+
 /* Optimize Machine Count Modal */
 .my-modal {
     border: none;

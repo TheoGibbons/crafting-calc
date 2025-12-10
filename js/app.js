@@ -62,6 +62,7 @@ class CraftingCalculator {
 
         // Initialize factory output panel
         this.initializeFactoryOutputPanel();
+        this.initializeFactoryInputPanel();
 
         // Auto save every 10 seconds
         // If there is a queryString like ?disable_auto_save=true
@@ -634,6 +635,7 @@ class CraftingCalculator {
 
         // Update machine status colors
         this.updateMachineStatuses();
+        this.refreshFactoryPanelsIfVisible();
     }
 
     // Factory Output Panel functionality
@@ -656,6 +658,21 @@ class CraftingCalculator {
         // };
     }
 
+    // Factory Input Panel functionality
+    initializeFactoryInputPanel() {
+        this.factoryInputPanel = document.getElementById('factory-input-panel');
+        this.toggleFactoryInputBtn = document.getElementById('toggle-factory-input-btn');
+        this.closeFactoryInputBtn = document.getElementById('close-factory-input-btn');
+        this.factoryInputContent = document.getElementById('factory-input-content');
+
+        if (this.toggleFactoryInputBtn) {
+            this.toggleFactoryInputBtn.addEventListener('click', () => this.toggleFactoryInputPanel());
+        }
+        if (this.closeFactoryInputBtn) {
+            this.closeFactoryInputBtn.addEventListener('click', () => this.hideFactoryInputPanel());
+        }
+    }
+
     toggleFactoryOutputPanel() {
         if (this.factoryOutputPanel.classList.contains('hidden')) {
             this.showFactoryOutputPanel();
@@ -668,11 +685,35 @@ class CraftingCalculator {
         this.factoryOutputPanel.classList.remove('hidden');
         this.toggleFactoryOutputBtn.style.display = 'none';
         // this.updateFactoryOutputPanel();
+        this.refreshFactoryPanelsIfVisible();
     }
 
     hideFactoryOutputPanel() {
         this.factoryOutputPanel.classList.add('hidden');
         this.toggleFactoryOutputBtn.style.display = 'block';
+    }
+
+    toggleFactoryInputPanel() {
+        if (this.factoryInputPanel.classList.contains('hidden')) {
+            this.showFactoryInputPanel();
+        } else {
+            this.hideFactoryInputPanel();
+        }
+    }
+
+    showFactoryInputPanel() {
+        this.factoryInputPanel.classList.remove('hidden');
+        if (this.toggleFactoryInputBtn) {
+            this.toggleFactoryInputBtn.style.display = 'none';
+        }
+        this.updateFactoryInputPanel();
+    }
+
+    hideFactoryInputPanel() {
+        this.factoryInputPanel.classList.add('hidden');
+        if (this.toggleFactoryInputBtn) {
+            this.toggleFactoryInputBtn.style.display = 'block';
+        }
     }
 
     updateFactoryOutputPanel() {
@@ -709,12 +750,71 @@ class CraftingCalculator {
 
             const outputRate = document.createElement('div');
             outputRate.classList.add('output-rate');
-            outputRate.textContent = `${rate.toFixed(2)} items/s`;
+            outputRate.textContent = `${rate.toFixed(2)}/min`;
 
             outputItem.appendChild(itemName);
             outputItem.appendChild(outputRate);
             this.factoryOutputContent.appendChild(outputItem);
         });
+    }
+
+    updateFactoryInputPanel() {
+        if (!this.factoryInputContent) return;
+
+        this.factoryInputContent.innerHTML = '';
+
+        const inputMachines = this.calculateFactoryInputsPerMachine();
+        const machineIds = Object.keys(inputMachines);
+
+        if (machineIds.length === 0) {
+            const noInputsMsg = document.createElement('div');
+            noInputsMsg.classList.add('no-inputs');
+            noInputsMsg.textContent = 'No factory inputs detected.';
+            this.factoryInputContent.appendChild(noInputsMsg);
+            return;
+        }
+
+        machineIds
+            .map(id => inputMachines[id])
+            .forEach(machineInfo => {
+                const block = document.createElement('div');
+                block.classList.add('input-machine-block');
+
+                const title = document.createElement('div');
+                title.classList.add('input-machine-title');
+                title.textContent = machineInfo.name || 'Machine';
+                block.appendChild(title);
+
+                if (!machineInfo.items || machineInfo.items.length === 0) {
+                    const noItems = document.createElement('div');
+                    noItems.classList.add('no-inputs');
+                    noItems.textContent = 'No items.';
+                    block.appendChild(noItems);
+                } else {
+                    machineInfo.items.forEach(entry => {
+                        const row = document.createElement('div');
+                        row.classList.add('input-item-row');
+
+                        const itemSpan = document.createElement('span');
+                        itemSpan.classList.add('input-item-name');
+                        itemSpan.textContent = entry.item || '(unknown item)';
+
+                        const rateDiv = document.createElement('div');
+                        rateDiv.classList.add('input-rate');
+                        if (typeof entry.rate === 'number') {
+                            rateDiv.textContent = `${entry.rate.toFixed(2)}/min`;
+                        } else {
+                            rateDiv.textContent = '-';
+                        }
+
+                        row.appendChild(itemSpan);
+                        row.appendChild(rateDiv);
+                        block.appendChild(row);
+                    });
+                }
+
+                this.factoryInputContent.appendChild(block);
+            });
     }
 
     calculateFactoryOutputs() {
@@ -735,6 +835,33 @@ class CraftingCalculator {
         });
 
         return outputs;
+    }
+
+    calculateFactoryInputsPerMachine() {
+        const inputMachines = {};
+
+        this.machines.forEach(machine => {
+            if (machine.inputs.length === 0) {
+                inputMachines[machine.id] = {
+                    name: machine.name,
+                    items: Object.entries(machine.outputItems).map(([key, item]) => ({
+                        item: key,
+                        rate: (item.rate || 0) * (machine.count || 1)
+                    }))
+                };
+            }
+        });
+
+        return inputMachines;
+    }
+
+    refreshFactoryPanelsIfVisible() {
+        if (this.factoryOutputPanel && !this.factoryOutputPanel.classList.contains('hidden')) {
+            this.updateFactoryOutputPanel();
+        }
+        if (this.factoryInputPanel && !this.factoryInputPanel.classList.contains('hidden')) {
+            this.updateFactoryInputPanel();
+        }
     }
 
     // Export the current state to a file
@@ -1187,6 +1314,7 @@ class CraftingCalculator {
 
         this.updateMachineStatuses();
         this.updateLinks();
+        this.refreshFactoryPanelsIfVisible();
     }
 
 }

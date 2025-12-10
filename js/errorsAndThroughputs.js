@@ -300,9 +300,9 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             } else {
                 infoIcon.style.display = '';
                 infoIcon.style.background = this.percentageToColor(inputItem.efficiency);
-                infoIcon.title = `Max throughput: ${inputItem.rate * m.count} items/s\n` +
-                    `Current throughput: ${inputItem.currentThroughput} items/s\n` +
-                    (inputItem.currentThroughput !== inputItem.attemptedThroughput ? `!!! Input: ${inputItem.attemptedThroughput} items/s\n` : '') +
+                infoIcon.title = `Max throughput: ${inputItem.rate * m.count}/min\n` +
+                    `Current throughput: ${inputItem.currentThroughput}/min\n` +
+                    (inputItem.currentThroughput !== inputItem.attemptedThroughput ? `!!! Input: ${inputItem.attemptedThroughput}/min\n` : '') +
                     `Efficiency: ${(inputItem.efficiency * 100).toFixed(0)}%`;
             }
         })
@@ -331,8 +331,8 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             } else {
                 infoIcon.style.display = '';
                 infoIcon.style.background = this.percentageToColor(m.efficiency);
-                infoIcon.title = `Max throughput: ${outputItem.rate * m.count} items/s\n` +
-                    `Current throughput: ${outputItem.currentThroughput} items/s\n` +
+                infoIcon.title = `Max throughput: ${outputItem.rate * m.count}/min\n` +
+                    `Current throughput: ${outputItem.currentThroughput}/min\n` +
                     `Efficiency: ${(m.efficiency * 100).toFixed(0)}%`;
             }
         })
@@ -351,12 +351,12 @@ CraftingCalculator.prototype.showMachineAndLinkErrorsAndThroughputs = function (
             errorIcon.style.display = '';
             errorIcon.title = link.errorMessages.join("\n");
         } else {
-            itemThroughput.textContent = `${link.currentThroughput.toFixed(2)} items/min`;
+            itemThroughput.textContent = `${link.currentThroughput.toFixed(2)}/min`;
             infoIcon.style.display = '';
             infoIcon.style.background = this.percentageToColor(link.efficiency);
-            infoIcon.title = `Max throughput: ${link.throughput === null ? 'Not set' : link.throughput + ' items/s'}\n` +
-                `Current throughput: ${link.currentThroughput.toFixed(2)} items/s\n` +
-                (link.currentThroughput.toFixed(2) !== link.attemptedThroughput.toFixed(2) ? `!!! Input: ${link.attemptedThroughput} items/s\n` : '') +
+            infoIcon.title = `Max throughput: ${link.throughput === null ? 'Not set' : link.throughput + '/min'}\n` +
+                `Current throughput: ${link.currentThroughput.toFixed(2)}/min\n` +
+                (link.currentThroughput.toFixed(2) !== link.attemptedThroughput.toFixed(2) ? `!!! Input: ${link.attemptedThroughput}/min\n` : '') +
                 `Efficiency: ${(link.efficiency * 100).toFixed(0)}%`;
         }
     })

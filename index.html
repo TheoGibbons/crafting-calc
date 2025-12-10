@@ -60,8 +60,22 @@
         </div>
     </div>
 
+    <!-- Factory Input Panel -->
+    <div id="factory-input-panel" class="factory-input-panel hidden">
+        <div class="factory-input-header">
+            <h3>Factory Inputs</h3>
+            <button id="close-factory-input-btn"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="factory-input-content" class="factory-input-content">
+            <!-- Input items will be dynamically populated here -->
+        </div>
+    </div>
+
     <!-- Factory Output Toggle Button -->
-    <button id="toggle-factory-output-btn" class="middle-right-btn"><i class="fas fa-chart-pie"></i> Factory Output</button>
+    <button id="toggle-factory-output-btn" class="middle-right-btn"><i class="fas fa-arrow-right-from-bracket"></i> <span class="factory-input-output-text">Out</span></button>
+
+    <!-- Factory Input Toggle Button -->
+    <button id="toggle-factory-input-btn" class="middle-right-btn middle-right-input-btn"><i class="fas fa-arrow-right-to-bracket"></i> <span class="factory-input-output-text">In</span></button>
 
     <!-- JavaScript files -->
     <script src="js/app.js"></script>

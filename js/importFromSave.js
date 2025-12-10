@@ -298,7 +298,7 @@ CraftingCalculator.prototype.mergeStateObject = function(importState) {
 
         const labelText = document.createElement('div');
         labelText.classList.add('link-text');
-        labelText.textContent = '? items/min';
+        labelText.textContent = '?/min';
         labelText.title = 'Click to set max throughput rate';
         labelText.style.cursor = 'pointer';
 
