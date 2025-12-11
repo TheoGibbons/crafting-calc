@@ -278,10 +278,6 @@ button i {
     box-sizing: border-box;
 }
 
-.output-rate {
-    cursor: pointer;
-}
-
 .input-item-row,
 .output-item-row {
     display: flex;
