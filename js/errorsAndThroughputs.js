@@ -19,7 +19,8 @@ CraftingCalculator.prototype.updateMachineStatuses = function () {
 
     this.showMachineAndLinkErrorsAndThroughputs();
 
-    this.updateFactoryOutputPanel();
+    this.refreshFactoryPanelsIfVisible();
+
 };
 
 CraftingCalculator.prototype.resetThroughputsOnMachineAndLinks = function () {

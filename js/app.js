@@ -673,11 +673,9 @@ class CraftingCalculator {
         this.closeFactoryInputBtn.addEventListener('click', () => this.hideFactoryInputPanel());
         this.factoryInputSplitBtn.addEventListener('click', () => {
             this.factoryInputPanel.classList.remove('merge-inputs');
-            this.updateFactoryInputPanel();
         });
         this.factoryInputMergeBtn.addEventListener('click', () => {
             this.factoryInputPanel.classList.add('merge-inputs');
-            this.updateFactoryInputPanel();
         });
     }
 
@@ -921,10 +919,10 @@ class CraftingCalculator {
     }
 
     refreshFactoryPanelsIfVisible() {
-        if (this.factoryOutputPanel && !this.factoryOutputPanel.classList.contains('hidden')) {
+        if (!this.factoryOutputPanel.classList.contains('hidden')) {
             this.updateFactoryOutputPanel();
         }
-        if (this.factoryInputPanel && !this.factoryInputPanel.classList.contains('hidden')) {
+        if (!this.factoryInputPanel.classList.contains('hidden')) {
             this.updateFactoryInputPanel();
         }
     }
