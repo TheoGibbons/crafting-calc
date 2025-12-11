@@ -672,12 +672,10 @@ class CraftingCalculator {
         this.toggleFactoryInputBtn.addEventListener('click', () => this.toggleFactoryInputPanel());
         this.closeFactoryInputBtn.addEventListener('click', () => this.hideFactoryInputPanel());
         this.factoryInputSplitBtn.addEventListener('click', () => {
-            console.log('split');
             this.factoryInputPanel.classList.remove('merge-inputs');
             this.updateFactoryInputPanel();
         });
         this.factoryInputMergeBtn.addEventListener('click', () => {
-            console.log('merge');
             this.factoryInputPanel.classList.add('merge-inputs');
             this.updateFactoryInputPanel();
         });
