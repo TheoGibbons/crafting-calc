@@ -532,6 +532,9 @@ button i {
 .factory-input-panel .factory-input-content {
     padding: 10px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .factory-input-panel .input-machine-block {
@@ -552,8 +555,16 @@ button i {
 .factory-input-panel .input-item-row {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
-    padding: 2px 0;
+    gap: 8px;
+    align-items: center;
+    margin: 3px 0;
+    flex-direction: row;
+    border-radius: 3px;
+}
+
+.factory-input-panel .input-item-row:hover,
+.output-item-row:hover {
+    background-color: #ebebeb;
 }
 
 .factory-input-panel .input-item-name {
@@ -568,22 +579,35 @@ button i {
 .factory-input-panel .input-rate {
     font-weight: bold;
     color: #0b8043;
+    font-variant-numeric: tabular-nums;
 }
 
 .factory-input-panel .no-inputs {
     font-style: italic;
-    color: #777;
+    color: #666;
 }
 
-/* Factory Input toggle button - slightly above output toggle */
-.middle-right-input-btn {
-    top: auto;
+/*.factory-input-content-split,*/
+/*.factory-input-content-merged {*/
+/*    display: block;*/
+/*}*/
+
+/* By default show split view, hide merged view */
+.factory-input-panel:not(.merge-inputs) #factory-input-content-merged {
+    display: none;
 }
 
-.factory-input-output-text {
-    width: 1.25em;
-    display: inline-block;
+/* When merge-inputs is active, show merged view and hide split view */
+.factory-input-panel.merge-inputs #factory-input-content-split {
+    display: none;
 }
+
+/* Existing behaviour for split/merge buttons: only show the opposite mode's toggle */
+.factory-input-panel:not(.merge-inputs) #factory-input-split,
+.factory-input-panel.merge-inputs #factory-input-merge {
+    display: none;
+}
+
 
 /* Optimize Machine Count Modal */
 .my-modal {

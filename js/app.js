@@ -664,13 +664,23 @@ class CraftingCalculator {
         this.toggleFactoryInputBtn = document.getElementById('toggle-factory-input-btn');
         this.closeFactoryInputBtn = document.getElementById('close-factory-input-btn');
         this.factoryInputContent = document.getElementById('factory-input-content');
+        this.factoryInputContentSplit = document.getElementById('factory-input-content-split');
+        this.factoryInputContentMerged = document.getElementById('factory-input-content-merged');
+        this.factoryInputSplitBtn = document.getElementById('factory-input-split');
+        this.factoryInputMergeBtn = document.getElementById('factory-input-merge');
 
-        if (this.toggleFactoryInputBtn) {
-            this.toggleFactoryInputBtn.addEventListener('click', () => this.toggleFactoryInputPanel());
-        }
-        if (this.closeFactoryInputBtn) {
-            this.closeFactoryInputBtn.addEventListener('click', () => this.hideFactoryInputPanel());
-        }
+        this.toggleFactoryInputBtn.addEventListener('click', () => this.toggleFactoryInputPanel());
+        this.closeFactoryInputBtn.addEventListener('click', () => this.hideFactoryInputPanel());
+        this.factoryInputSplitBtn.addEventListener('click', () => {
+            console.log('split');
+            this.factoryInputPanel.classList.remove('merge-inputs');
+            this.updateFactoryInputPanel();
+        });
+        this.factoryInputMergeBtn.addEventListener('click', () => {
+            console.log('merge');
+            this.factoryInputPanel.classList.add('merge-inputs');
+            this.updateFactoryInputPanel();
+        });
     }
 
     toggleFactoryOutputPanel() {
@@ -761,7 +771,8 @@ class CraftingCalculator {
     updateFactoryInputPanel() {
         if (!this.factoryInputContent) return;
 
-        this.factoryInputContent.innerHTML = '';
+        if (this.factoryInputContentSplit) this.factoryInputContentSplit.innerHTML = '';
+        if (this.factoryInputContentMerged) this.factoryInputContentMerged.innerHTML = '';
 
         const inputMachines = this.calculateFactoryInputsPerMachine();
         const machineIds = Object.keys(inputMachines);
@@ -770,52 +781,107 @@ class CraftingCalculator {
             const noInputsMsg = document.createElement('div');
             noInputsMsg.classList.add('no-inputs');
             noInputsMsg.textContent = 'No factory inputs detected.';
-            this.factoryInputContent.appendChild(noInputsMsg);
+            const target = this.factoryInputPanel && this.factoryInputPanel.classList.contains('merge-inputs')
+                ? this.factoryInputContentMerged || this.factoryInputContent
+                : this.factoryInputContentSplit || this.factoryInputContent;
+            target.appendChild(noInputsMsg);
             return;
         }
 
-        machineIds
-            .map(id => inputMachines[id])
-            .sort((a, b) => a.items.map(i => i.item).join(', ').localeCompare(b.items.map(i => i.item).join(', ')))
-            .forEach(machineInfo => {
-                const block = document.createElement('div');
-                block.classList.add('input-machine-block');
+        // Always render split view into its container
+        if (this.factoryInputContentSplit) {
+            machineIds
+                .map(id => inputMachines[id])
+                .sort((a, b) => a.items.map(i => i.item).join(', ').localeCompare(b.items.map(i => i.item).join(', ')))
+                .forEach(machineInfo => {
+                    const block = document.createElement('div');
+                    block.classList.add('input-machine-block');
 
-                const title = document.createElement('div');
-                title.classList.add('input-machine-title');
-                title.textContent = machineInfo.name || 'Machine';
-                block.appendChild(title);
+                    const title = document.createElement('div');
+                    title.classList.add('input-machine-title');
+                    title.textContent = machineInfo.name || 'Machine';
+                    block.appendChild(title);
 
-                if (!machineInfo.items || machineInfo.items.length === 0) {
-                    const noItems = document.createElement('div');
-                    noItems.classList.add('no-inputs');
-                    noItems.textContent = 'No items.';
-                    block.appendChild(noItems);
-                } else {
-                    machineInfo.items.forEach(entry => {
+                    if (!machineInfo.items || machineInfo.items.length === 0) {
+                        const noItems = document.createElement('div');
+                        noItems.classList.add('no-inputs');
+                        noItems.textContent = 'No items.';
+                        block.appendChild(noItems);
+                    } else {
+                        machineInfo.items.forEach(entry => {
+                            const row = document.createElement('div');
+                            row.classList.add('input-item-row');
+
+                            const itemSpan = document.createElement('span');
+                            itemSpan.classList.add('input-item-name');
+                            itemSpan.textContent = entry.item || '(unknown item)';
+
+                            const rateDiv = document.createElement('div');
+                            rateDiv.classList.add('input-rate');
+                            if (typeof entry.rate === 'number') {
+                                rateDiv.textContent = `${entry.rate.toFixed(2)}/min`;
+                            } else {
+                                rateDiv.textContent = '-';
+                            }
+
+                            row.appendChild(itemSpan);
+                            row.appendChild(rateDiv);
+                            block.appendChild(row);
+                        });
+                    }
+
+                    this.factoryInputContentSplit.appendChild(block);
+                });
+        }
+
+        // Render merged view into its container
+        if (this.factoryInputContentMerged) {
+            const totals = this.calculateFactoryInputsMerged(inputMachines);
+            const itemEntries = Object.entries(totals);
+
+            if (itemEntries.length === 0) {
+                const noInputsMsg = document.createElement('div');
+                noInputsMsg.classList.add('no-inputs');
+                noInputsMsg.textContent = 'No factory inputs detected.';
+                this.factoryInputContentMerged.appendChild(noInputsMsg);
+            } else {
+                itemEntries
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .forEach(([item, rate]) => {
                         const row = document.createElement('div');
                         row.classList.add('input-item-row');
 
                         const itemSpan = document.createElement('span');
                         itemSpan.classList.add('input-item-name');
-                        itemSpan.textContent = entry.item || '(unknown item)';
+                        itemSpan.textContent = item || '(unknown item)';
 
                         const rateDiv = document.createElement('div');
                         rateDiv.classList.add('input-rate');
-                        if (typeof entry.rate === 'number') {
-                            rateDiv.textContent = `${entry.rate.toFixed(2)}/min`;
+                        if (typeof rate === 'number') {
+                            rateDiv.textContent = `${rate.toFixed(2)}/min`;
                         } else {
                             rateDiv.textContent = '-';
                         }
 
                         row.appendChild(itemSpan);
                         row.appendChild(rateDiv);
-                        block.appendChild(row);
+                        this.factoryInputContentMerged.appendChild(row);
                     });
-                }
+            }
+        }
+    }
 
-                this.factoryInputContent.appendChild(block);
+    calculateFactoryInputsMerged(inputMachines) {
+        const totals = {};
+        Object.values(inputMachines).forEach(machineInfo => {
+            if (!machineInfo.items) return;
+            machineInfo.items.forEach(entry => {
+                if (!entry || typeof entry.rate !== 'number') return;
+                const key = entry.item || '(unknown item)';
+                totals[key] = (totals[key] || 0) + entry.rate;
             });
+        });
+        return totals;
     }
 
     calculateFactoryOutputs() {
