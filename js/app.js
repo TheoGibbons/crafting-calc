@@ -946,7 +946,7 @@ class CraftingCalculator {
                 const sentAway = itemsSentToOtherMachines[item] || 0;
                 const netOutput = produced - sentAway;
 
-                if (netOutput > 0) {
+                if (netOutput > 0.01) {
                     if (itemsSentToOtherMachines[item]) {
                         const itemName = `${escapeHtml(item)}<br/><small style="font-size: xx-small;">${escapeHtml(machine.name)}</small>`
                         outputsWaste[itemName] = (outputsWaste[itemName] || 0) + netOutput;
