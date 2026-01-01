@@ -1,3 +1,7 @@
+# Repo
+
+[https://github.com/TheoGibbons/crafting-calc](https://github.com/TheoGibbons/crafting-calc)
+
 # Crafting Calculator
 
 A visual web-based tool for designing and optimizing production chains. This calculator helps you plan complex manufacturing processes by connecting machines, specifying input/output rates, and analyzing throughput.
