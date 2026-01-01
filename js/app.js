@@ -228,7 +228,7 @@ class CraftingCalculator {
 
         while (!stateName) {
             // Prompt for a name for this saved state
-            const defaultName = Object.keys(this.calculateFactoryOutputs().outputs).join(', ');
+            const defaultName = Object.keys(this.calculateFactoryOutputs().factoryOutputs).join(', ');
             stateName = prompt('Enter a name for this saved state:', defaultName);
 
             if(stateName === null) return; // User cancelled
@@ -731,7 +731,7 @@ class CraftingCalculator {
         this.factoryOutputContent.innerHTML = '';
 
         // Calculate the net output of the factory
-        const { outputs: factoryOutputs, outputsWaste } = this.calculateFactoryOutputs();
+        const { factoryOutputs, outputsWaste } = this.calculateFactoryOutputs();
 
         if (Object.keys(factoryOutputs).length === 0 && Object.keys(outputsWaste).length === 0) {
             // No outputs, show a message
@@ -749,7 +749,7 @@ class CraftingCalculator {
 
             const itemName = document.createElement('div');
             itemName.classList.add('output-item-name');
-            itemName.textContent = item;
+            itemName.innerHTML = item;
 
             const outputRate = document.createElement('div');
             outputRate.classList.add('output-rate');
@@ -921,7 +921,7 @@ class CraftingCalculator {
     }
 
     calculateFactoryOutputs() {
-        const outputs = {};
+        const factoryOutputs = {};
         const outputsWaste = {};
 
         // Loop through all machines
@@ -935,7 +935,7 @@ class CraftingCalculator {
 
                 this.links.forEach(link => {
                     if (link.source.id === machine.id && link.item === item) {
-                        itemsSentToOtherMachines[item] = (itemsSentToOtherMachines[item] || 0) + (link.currentThroughput || 0);
+                        itemsSentToOtherMachines[escapeHtml(item)] = (itemsSentToOtherMachines[escapeHtml(item)] || 0) + (link.currentThroughput || 0);
                     }
                 });
             });
@@ -948,17 +948,17 @@ class CraftingCalculator {
 
                 if (netOutput > 0) {
                     if (itemsSentToOtherMachines[item]) {
-                        outputsWaste[item] = (outputsWaste[item] || 0) + netOutput;
+                        const itemName = `${escapeHtml(item)}<br/><small style="font-size: xx-small;">${escapeHtml(machine.name)}</small>`
+                        outputsWaste[itemName] = (outputsWaste[itemName] || 0) + netOutput;
                     } else {
-                        outputs[item] = (outputs[item] || 0) + netOutput;
+                        factoryOutputs[escapeHtml(item)] = (factoryOutputs[escapeHtml(item)] || 0) + netOutput;
                     }
                 }
             });
 
         });
 
-        // return outputs;          // OLD
-        return {outputs, outputsWaste};
+        return {factoryOutputs, outputsWaste};
     }
 
     calculateFactoryInputsPerMachine() {
