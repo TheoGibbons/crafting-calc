@@ -228,7 +228,7 @@ class CraftingCalculator {
 
         while (!stateName) {
             // Prompt for a name for this saved state
-            const defaultName = Object.keys(this.calculateFactoryOutputs()).join(', ');
+            const defaultName = Object.keys(this.calculateFactoryOutputs().outputs).join(', ');
             stateName = prompt('Enter a name for this saved state:', defaultName);
 
             if(stateName === null) return; // User cancelled
@@ -731,9 +731,9 @@ class CraftingCalculator {
         this.factoryOutputContent.innerHTML = '';
 
         // Calculate the net output of the factory
-        const factoryOutputs = this.calculateFactoryOutputs();
+        const { outputs: factoryOutputs, outputsWaste } = this.calculateFactoryOutputs();
 
-        if (Object.keys(factoryOutputs).length === 0) {
+        if (Object.keys(factoryOutputs).length === 0 && Object.keys(outputsWaste).length === 0) {
             // No outputs, show a message
             const noOutputsMsg = document.createElement('div');
             noOutputsMsg.classList.add('no-outputs');
@@ -742,11 +742,8 @@ class CraftingCalculator {
             return;
         }
 
-        // Sort outputs by item name
-        const sortedOutputs = Object.entries(factoryOutputs).sort((a, b) => a[0].localeCompare(b[0]));
-
-        // Add each output to the panel
-        sortedOutputs.forEach(([item, rate]) => {
+        // Helper function to create output item elements
+        const createOutputItem = (item, rate) => {
             const outputItem = document.createElement('div');
             outputItem.classList.add('output-item');
 
@@ -760,8 +757,51 @@ class CraftingCalculator {
 
             outputItem.appendChild(itemName);
             outputItem.appendChild(outputRate);
-            this.factoryOutputContent.appendChild(outputItem);
+            return outputItem;
+        };
+
+        // Sort and add main outputs
+        const sortedOutputs = Object.entries(factoryOutputs).sort((a, b) => a[0].localeCompare(b[0]));
+        sortedOutputs.forEach(([item, rate]) => {
+            this.factoryOutputContent.appendChild(createOutputItem(item, rate));
         });
+
+        // Add waste section if there are waste outputs
+        if (Object.keys(outputsWaste).length > 0) {
+            const wasteSection = document.createElement('div');
+            wasteSection.classList.add('waste-section');
+
+            const wasteHeader = document.createElement('div');
+            wasteHeader.classList.add('waste-header');
+            wasteHeader.innerHTML = '<i class="fas fa-chevron-down waste-toggle-icon"></i> Waste';
+            wasteHeader.style.cursor = 'pointer';
+
+            const wasteContent = document.createElement('div');
+            wasteContent.classList.add('waste-content');
+
+            // Toggle collapse on header click
+            wasteHeader.addEventListener('click', () => {
+                wasteContent.classList.toggle('collapsed');
+                const icon = wasteHeader.querySelector('.waste-toggle-icon');
+                if (wasteContent.classList.contains('collapsed')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-right');
+                } else {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+
+            // Sort and add waste outputs
+            const sortedWaste = Object.entries(outputsWaste).sort((a, b) => a[0].localeCompare(b[0]));
+            sortedWaste.forEach(([item, rate]) => {
+                wasteContent.appendChild(createOutputItem(item, rate));
+            });
+
+            wasteSection.appendChild(wasteHeader);
+            wasteSection.appendChild(wasteContent);
+            this.factoryOutputContent.appendChild(wasteSection);
+        }
     }
 
     updateFactoryInputPanel() {
@@ -882,22 +922,43 @@ class CraftingCalculator {
 
     calculateFactoryOutputs() {
         const outputs = {};
+        const outputsWaste = {};
 
-        // First identify terminal machines (machines with no output links)
-        const terminalMachines = this.machines.filter(machine =>
-            !this.links.some(link => link.source.id === machine.id)
-        );
+        // Loop through all machines
+        this.machines.forEach(machine => {
 
-        // Add up all outputs from terminal machines
-        terminalMachines.forEach(machine => {
+            const itemsProducedFromThisMachine = {};
+            const itemsSentToOtherMachines = {};
+
             Object.entries(machine.outputItems).forEach(([item, output]) => {
-                if (output.currentThroughput) {
-                    outputs[item] = (outputs[item] || 0) + output.currentThroughput;
+                itemsProducedFromThisMachine[item] = (itemsProducedFromThisMachine[item] || 0) + (output.rate * machine.count);
+
+                this.links.forEach(link => {
+                    if (link.source.id === machine.id && link.item === item) {
+                        itemsSentToOtherMachines[item] = (itemsSentToOtherMachines[item] || 0) + (link.currentThroughput || 0);
+                    }
+                });
+            });
+
+            // Calculate net outputs for this machine
+            Object.keys(itemsProducedFromThisMachine).forEach(item => {
+                const produced = itemsProducedFromThisMachine[item] || 0;
+                const sentAway = itemsSentToOtherMachines[item] || 0;
+                const netOutput = produced - sentAway;
+
+                if (netOutput > 0) {
+                    if (itemsSentToOtherMachines[item]) {
+                        outputsWaste[item] = (outputsWaste[item] || 0) + netOutput;
+                    } else {
+                        outputs[item] = (outputs[item] || 0) + netOutput;
+                    }
                 }
             });
+
         });
 
-        return outputs;
+        // return outputs;          // OLD
+        return {outputs, outputsWaste};
     }
 
     calculateFactoryInputsPerMachine() {
