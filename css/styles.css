@@ -681,6 +681,21 @@ button i {
     font-size: 14px;
 }
 
+.modal-field label.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.modal-field label.radio-label input[type="radio"],
+.modal-field label.radio-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
 .modal-field select,
 .modal-field input {
     width: 100%;

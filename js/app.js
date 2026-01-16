@@ -988,8 +988,77 @@ class CraftingCalculator {
         }
     }
 
-    // Export the current state to a file
+    // Export the current state to a file - shows modal to choose export type
     exportState() {
+        this.showExportModal();
+    }
+
+    // Show the export modal with options
+    showExportModal() {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('export-modal');
+
+        if (!modal) {
+            modal = document.createElement('dialog');
+            modal.id = 'export-modal';
+            modal.className = 'my-modal';
+
+            modal.innerHTML = `
+                <form method="dialog">
+                    <h3>Export Options</h3>
+                    <p>Choose what you want to export:</p>
+                    
+                    <div class="modal-field">
+                        <label class="radio-label">
+                            <input type="radio" name="export-type" value="current" checked>
+                            Export current project
+                        </label>
+                    </div>
+                    
+                    <div class="modal-field">
+                        <label class="radio-label">
+                            <input type="radio" name="export-type" value="all">
+                            Export all saved projects
+                        </label>
+                    </div>
+                    
+                    <div class="modal-buttons">
+                        <button type="button" value="cancel">Cancel</button>
+                        <button value="confirm" id="export-confirm-btn">Export</button>
+                    </div>
+                </form>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        // Show the modal
+        modal.showModal();
+
+        // Add event listener for the cancel button
+        const cancelButton = modal.querySelector('button[value="cancel"]');
+        const cancelHandler = () => {
+            modal.close('cancel');
+        };
+        cancelButton.removeEventListener('click', cancelHandler);
+        cancelButton.addEventListener('click', cancelHandler);
+
+        // Handle dialog close
+        const closeHandler = () => {
+            if (modal.returnValue === 'confirm') {
+                const exportType = modal.querySelector('input[name="export-type"]:checked').value;
+                if (exportType === 'current') {
+                    this.exportCurrentState();
+                } else {
+                    this.exportAllSaves();
+                }
+            }
+        };
+        modal.addEventListener('close', closeHandler, { once: true });
+    }
+
+    // Export just the current state
+    exportCurrentState() {
         if (this.machines.length === 0) {
             alert("Nothing to export. Create some machines first.");
             return;
@@ -1017,6 +1086,38 @@ class CraftingCalculator {
         console.log(`Exported "${exportName}" successfully!`);
     }
 
+    // Export all saved states from localStorage
+    exportAllSaves() {
+        const savedStates = this.getSavedStatesMap();
+
+        if (Object.keys(savedStates).length === 0) {
+            alert("No saved states to export.");
+            return;
+        }
+
+        // Create export object with all saves
+        const exportData = {
+            version: "1.0",
+            timestamp: new Date().toISOString(),
+            type: "all_saves",
+            saves: savedStates
+        };
+
+        // Convert to JSON and create a Blob
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+
+        // Create a download link and trigger the download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = `all_saves_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        console.log(`Exported all saves successfully!`);
+    }
+
     // Get export data without downloading
     getExportData(exportName) {
         // Create a data structure to store the state using our helper method
@@ -1031,50 +1132,197 @@ class CraftingCalculator {
         };
     }
 
-    // Handle file import
+    // Handle file import - shows modal to choose import type
     handleImportFile(event) {
         const file = event.target.files[0];
         if (!file) {
             return; // No file selected
         }
 
-        // Confirm before importing
-        if (!confirm(`Import state from "${file.name}"? This will replace your current work.`)) {
-            this.importFile.value = ''; // Clear the file input
-            return;
-        }
-
+        // Read the file first to determine its type
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                // Parse the JSON file
                 const importData = JSON.parse(e.target.result);
-
-                // Basic validation
-                if (!importData.data || !importData.data.machines || !Array.isArray(importData.data.machines)) {
-                    throw new Error('Invalid import file format');
-                }
-
-                // Apply the imported state using our helper method
-                this.applyStateObject(importData.data);
-
-                alert(`Import from "${file.name}" successful!`);
-                
+                this.showImportModal(file.name, importData);
             } catch (error) {
                 console.error('Import error:', error);
-                alert(`Error importing file: ${error.message}`);
+                alert(`Error parsing file: ${error.message}`);
+                this.importFile.value = '';
             }
-            
-            // Clear the file input so the same file can be selected again
-            this.importFile.value = '';
         };
-        
+
         reader.onerror = () => {
             alert('Error reading the file');
             this.importFile.value = '';
         };
-        
+
         reader.readAsText(file);
+    }
+
+    // Show the import modal with options
+    showImportModal(fileName, importData) {
+        // Determine what type of file this is
+        const isAllSaves = importData.type === 'all_saves' && importData.saves;
+        const isSingleProject = importData.data && importData.data.machines;
+
+        if (!isAllSaves && !isSingleProject) {
+            alert('Invalid import file format. The file must be a project export or an "all saves" export.');
+            this.importFile.value = '';
+            return;
+        }
+
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('import-modal');
+
+        if (!modal) {
+            modal = document.createElement('dialog');
+            modal.id = 'import-modal';
+            modal.className = 'my-modal';
+            document.body.appendChild(modal);
+        }
+
+        // Build modal content based on file type
+        let optionsHtml = '';
+
+        if (isSingleProject) {
+            optionsHtml += `
+                <div class="modal-field">
+                    <label class="radio-label">
+                        <input type="radio" name="import-type" value="single" checked>
+                        Import as current project (replaces current work)
+                    </label>
+                </div>
+            `;
+        }
+
+        if (isAllSaves) {
+            const saveCount = Object.keys(importData.saves).length;
+            optionsHtml += `
+                <div class="modal-field">
+                    <label class="radio-label">
+                        <input type="radio" name="import-type" value="all" ${!isSingleProject ? 'checked' : ''}>
+                        Import all saved projects (${saveCount} projects)
+                    </label>
+                </div>
+                <div class="modal-field import-all-options" style="margin-left: 24px; ${!isSingleProject ? '' : 'display: none;'}">
+                    <label class="radio-label">
+                        <input type="checkbox" name="import-overwrite" checked>
+                        Overwrite existing saves with same name
+                    </label>
+                </div>
+            `;
+        }
+
+        modal.innerHTML = `
+            <form method="dialog">
+                <h3>Import Options</h3>
+                <p>Importing: <strong>${fileName}</strong></p>
+                
+                ${optionsHtml}
+                
+                <div class="modal-buttons">
+                    <button type="button" value="cancel">Cancel</button>
+                    <button value="confirm" id="import-confirm-btn">Import</button>
+                </div>
+            </form>
+        `;
+
+        // Show/hide overwrite option based on selection
+        const allRadio = modal.querySelector('input[value="all"]');
+        const allOptions = modal.querySelector('.import-all-options');
+        if (allRadio && allOptions) {
+            modal.querySelectorAll('input[name="import-type"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    allOptions.style.display = allRadio.checked ? '' : 'none';
+                });
+            });
+        }
+
+        // Show the modal
+        modal.showModal();
+
+        // Add event listener for the cancel button
+        const cancelButton = modal.querySelector('button[value="cancel"]');
+        const cancelHandler = () => {
+            modal.close('cancel');
+            this.importFile.value = '';
+        };
+        cancelButton.addEventListener('click', cancelHandler);
+
+        // Handle dialog close
+        const closeHandler = () => {
+            if (modal.returnValue === 'confirm') {
+                const importType = modal.querySelector('input[name="import-type"]:checked')?.value;
+
+                if (importType === 'single') {
+                    this.importSingleProject(fileName, importData);
+                } else if (importType === 'all') {
+                    const overwrite = modal.querySelector('input[name="import-overwrite"]')?.checked ?? true;
+                    this.importAllSaves(fileName, importData, overwrite);
+                }
+            }
+            this.importFile.value = '';
+        };
+        modal.addEventListener('close', closeHandler, { once: true });
+    }
+
+    // Import a single project file
+    importSingleProject(fileName, importData) {
+        try {
+            // Basic validation
+            if (!importData.data || !importData.data.machines || !Array.isArray(importData.data.machines)) {
+                throw new Error('Invalid import file format');
+            }
+
+            // Apply the imported state using our helper method
+            this.applyStateObject(importData.data);
+
+            alert(`Import from "${fileName}" successful!`);
+
+        } catch (error) {
+            console.error('Import error:', error);
+            alert(`Error importing file: ${error.message}`);
+        }
+    }
+
+    // Import all saved projects from an "all saves" export
+    importAllSaves(fileName, importData, overwrite) {
+        try {
+            if (!importData.saves || typeof importData.saves !== 'object') {
+                throw new Error('Invalid "all saves" file format');
+            }
+
+            const existingSaves = this.getSavedStatesMap();
+            const importedSaves = importData.saves;
+            let importedCount = 0;
+            let skippedCount = 0;
+
+            for (const [key, value] of Object.entries(importedSaves)) {
+                if (existingSaves[key] && !overwrite) {
+                    skippedCount++;
+                    continue;
+                }
+                existingSaves[key] = value;
+                importedCount++;
+            }
+
+            // Save back to localStorage
+            localStorage.setItem(this.localStorageKey, JSON.stringify(existingSaves));
+
+            // Refresh the load dropdown
+            this.loadSavedStatesList();
+
+            let message = `Imported ${importedCount} project(s) from "${fileName}".`;
+            if (skippedCount > 0) {
+                message += ` Skipped ${skippedCount} existing project(s).`;
+            }
+            alert(message);
+
+        } catch (error) {
+            console.error('Import error:', error);
+            alert(`Error importing file: ${error.message}`);
+        }
     }
 
     // ===== Import Another Save (merge) functionality =====
